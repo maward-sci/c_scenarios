@@ -19,24 +19,22 @@ model_params <- data.frame(
 # Define Functions
 ################################
 
-### seeding growth curve
+# https://www.r-bloggers.com/2019/02/anatomy-of-a-logistic-growth-curve/
+# https://www.tjmahr.com/anatomy-of-a-logistic-growth-curve/
+# test: plot(logistic_growth(0:10))
+
+### seeding growth curve ###
 log_growth_seed<- function(years, scale = 1, asymptote = 60){
-  # https://www.r-bloggers.com/2019/02/anatomy-of-a-logistic-growth-curve/
-  # https://www.tjmahr.com/anatomy-of-a-logistic-growth-curve/
-  # test: plot(logistic_growth(0:10))
   asymptote = asymptote # max size of meadow
   scale=scale
   midpoint=length(years)/1.8 #midpoint at 5.55 years
   seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
   return(seagrass_area_ha)
 }
-plot(log_growth_seed(1:10), xlab = "Year") #take a look at the shape of the curve
+plot(log_growth_seed(1:10), xlab = "Year",  main = "Seed") #take a look at the shape of the curve
 
-### transplant growth curve
+### transplant growth curve ###
 log_growth_transplant<- function(years, scale = 1, asymptote = 60, midpoint = NULL){
-  # https://www.r-bloggers.com/2019/02/anatomy-of-a-logistic-growth-curve/
-  # https://www.tjmahr.com/anatomy-of-a-logistic-growth-curve/
-  # test: plot(logistic_growth(0:10))
   asymptote = asymptote # max size of meadow
   scale=scale
   if (is.null(midpoint)){
@@ -45,10 +43,27 @@ log_growth_transplant<- function(years, scale = 1, asymptote = 60, midpoint = NU
   seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
   return(seagrass_area_ha)
 }
-plot(log_growth_trans(1:10), xlab = "Year") #take a look at the shape of the curve
+plot(log_growth_trans(1:10), xlab = "Year", main = "Transplant") #take a look at the shape of the curve
 
 
-### methane as a function of area
+### Infill growth curve ### 
+# -- How to move the curve to the right 2 years? (no growth until after the infill)
+log_growth_infill<- function(years, scale = 1, asymptote = 6, midpoint = NULL){  #why 4?? resolve
+  asymptote = asymptote # max size of meadow
+  scale=scale
+  if (is.null(midpoint)){
+    midpoint=length(years)/2.3 #midpoint at 4.3 yrs
+  }
+  seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
+  return(seagrass_area_ha)
+}
+plot(log_growth_infill(1:10), xlab = "Year", main = "Infill", ylim = range(0,8)) #take a look at the shape of the curve
+
+
+
+
+#### methane as a function of area ###
+
 #asympt at 0.2 so... 0.2/60 = 0.0033
 
 methane_rest <- function(){}
@@ -88,3 +103,13 @@ create_seagrass_exp <- function(model_params){
 ################################
 # Run functions:
 df <- create_seagrass_exp(model_params)
+
+
+
+
+### note on where I am leaving off: 
+
+## I have the baselines for 3 scenarios (seed, transplant, and dredge) -  these are all the same
+# next: generate the rest scenarios based on the growth curves. the g curves for seed and transplant are good, 
+#but I need to shift the infill curve to the right. 
+# add these rest value in the df at the end
