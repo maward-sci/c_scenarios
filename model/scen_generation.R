@@ -151,6 +151,8 @@ create_seagrass_exp <- function(model_params, n_sim){
   return(df)
 }
 
+
+## summarizes the simulation outputs 
 summarize_simulations <- function(df){
   summary <- df %>%
     group_by(treatments, restoration_status, year) %>%
