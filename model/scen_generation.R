@@ -79,13 +79,6 @@ methane_per_vegetated_area <- function(area){
   }
 
 
-methane_per_vegetated_area <- function(area, year){
-  meth_rest <- area*0.005
-  year = 
-  print(meth_rest)
-  return(meth_rest)
-}
-
 create_seagrass_exp <- function(model_params, n_sim){
   treatments <- c("Seed", "Transplant", "Infill")
   restoration_status <- c("Baseline", "Restoration")
