@@ -6,3 +6,7 @@
 1. Look at code files
     1. `scen_generation.R` is probably important
     1. `Scenarios_exploring.R` is also potentially valuable
+
+
+# Tips
+1. The RStudio history is saved here `/Users/<userName>/.rstudio-desktop`
