@@ -1,9 +1,10 @@
 library(dplyr)
 library(ggplot2)
 library(nlme)
+source('./model/scen_generation.R')
 
-setwd("~/Documents/Oxford Post-doc/c_scenarios")
-scen <- read.csv("Scenarios Data.csv", header = T, na.strings=c("", "NA"),stringsAsFactors = FALSE)
+# setwd("~/Documents/Oxford Post-doc/c_scenarios")
+scen <- read.csv("./db/Scenarios_Data.csv", header = T, na.strings=c("", "NA"),stringsAsFactors = FALSE)
 scen <- scen[-c(67:999),-c(17:29)] #remove excess rows/cs
 scen <- scen[,-c(17:18)] #remove excess row?
 

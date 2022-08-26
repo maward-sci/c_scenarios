@@ -23,43 +23,15 @@ model_params <- data.frame(
 # https://www.tjmahr.com/anatomy-of-a-logistic-growth-curve/
 # test: plot(logistic_growth(0:10))
 
-### seeding growth curve ###
-log_growth_seed<- function(years, scale = 1, asymptote = 60){
-  asymptote = asymptote # max size of meadow
-  scale=scale
-  midpoint=length(years)/1.8 #midpoint at 5.55 years
-  seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
-  return(seagrass_area_ha)
-}
-plot(log_growth_seed(1:10), xlab = "Year",  main = "Seed") #take a look at the shape of the curve
-
-### transplant growth curve ###
-log_growth_transplant<- function(years, scale = 1, asymptote = 60, midpoint = NULL){
+log_growth_general <- function(years, scale = 1, asymptote = 60, midpoint = NULL, year_midpoint = 4.3){
   asymptote = asymptote # max size of meadow
   scale=scale
   if (is.null(midpoint)){
-    midpoint=length(years)/2.3 #midpoint at 4.3 yrs
+    midpoint=length(years)/(10/year_midpoint) #midpoint at 4.3 yrs
   }
   seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
   return(seagrass_area_ha)
 }
-plot(log_growth_transplant(1:10), xlab = "Year", main = "Transplant") #take a look at the shape of the curve
-
-
-### Infill growth curve ### 
-# -- How to move the curve to the right 2 years? (no growth until after the infill)
-log_growth_infill<- function(years, scale = 1, asymptote = 6, midpoint = NULL){  #why 4?? resolve
-  asymptote = asymptote # max size of meadow
-  scale=scale
-  if (is.null(midpoint)){
-    midpoint=length(years)/2.3 #midpoint at 4.3 yrs
-  }
-  seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
-  return(seagrass_area_ha)
-}
-plot(log_growth_infill(1:10), xlab = "Year", main = "Infill", ylim = range(0,8)) #take a look at the shape of the curve
-
-
 
 #### methane as a function of area ###
 # methane at time 1 = area at time 1*0.0005
@@ -72,8 +44,6 @@ methane_rest_fun <- function(area, year){
   print(meth_rest)
   return(meth_rest)
 }
-#did it even work? how do I tel... 
-plot(methane_rest_fun(1:10))
 
 
 create_seagrass_exp <- function(model_params){
@@ -103,19 +73,3 @@ create_seagrass_exp <- function(model_params){
   # x <- df[which(df$restoration_status == 'Restoration'),]
   return(df)
 }
-
-################################
-# Run Routines
-################################
-# Run functions:
-df <- create_seagrass_exp(model_params)
-
-
-
-
-### note on where I am leaving off: 
-
-## I have the baselines for 3 scenarios (seed, transplant, and dredge) -  these are all the same
-# next: generate the rest scenarios based on the growth curves. the g curves for seed and transplant are good, 
-#but I need to shift the infill curve to the right. 
-# add these rest value in the df at the end
