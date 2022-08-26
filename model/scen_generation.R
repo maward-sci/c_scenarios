@@ -150,6 +150,24 @@ create_seagrass_exp <- function(model_params, n_sim){
     df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
     carbon_param = 'nitrous_oxide'
   )
+  df$biomass <- rnorm(
+    n = nrow(df), #draw from the normal distribution nrow times
+    mean = as.numeric(model_params['biomass','mean_unvegetated']),
+    sd = as.numeric(model_params['biomass','sd_unvegetated'])
+  )
+  df[which(df$restoration_status=='Restoration'), 'biomass'] <- carbon_per_vegetated_area(
+    df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    carbon_param = 'biomass'
+  )
+  df$soil <- rnorm(
+    n = nrow(df), #draw from the normal distribution nrow times
+    mean = as.numeric(model_params['soil','mean_unvegetated']),
+    sd = as.numeric(model_params['soil','sd_unvegetated'])
+  )
+  df[which(df$restoration_status=='Restoration'), 'soil'] <- carbon_per_vegetated_area(
+    df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    carbon_param = 'soil'
+  )
   # set N2O for Restoration where it is dependant on project_size_ha
   # Modify some parameters based on descriptive variables
   # x <- df[which(df$restoration_status == 'Restoration'),]
