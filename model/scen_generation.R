@@ -5,21 +5,21 @@ library(dplyr)
 ################################
 # Define Paramters
 ################################
-# DataFrame with Model Parameters
+# DataFrame with Model Parameters (roughly estiamted from Oreska et al. Table 3)
 model_params <- data.frame(
   rbind(
   methane = list(
-    mean_unvegetated = 0.03,
-    sd_unvegetated = 0.005,
-    mean_vegetated = 0.011,
-    sd_vegetated = 0.001,
+    mean_unvegetated = 0.025,#0.025 met T co2eq per ha per yr in unveg sites
+    sd_unvegetated = 0.01,
+    mean_vegetated = 0.2,#0.2 Metirc tons CO2eq per ha per yr in veg sites
+    sd_vegetated = 0.08,
     units='co2eq/ha'
     ), #for baseline
   nitrous_oxide = list(
-    mean_unvegetated = 0.06,
-    sd_unvegetated = 0.03,
-    mean_vegetated = NULL,
-    sd_vegetated = NULL,
+    mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
+    sd_unvegetated = 0.02,
+    mean_vegetated = 0.5,
+    sd_vegetated = 0.15,
     units='co2eq/ha'
     ), #for baseline
   biomass = list(
@@ -30,10 +30,10 @@ model_params <- data.frame(
     units='co2eq/ha'
     ), #for baseline
   soil = list(
-    mean_unvegetated = 0.169,
-    sd_unvegetated = 0.01,
-    mean_vegetated = NULL,
-    sd_vegetated = NULL,
+    mean_unvegetated = 8.125, #based very roughly on Oreska table 3 but needs work
+    sd_unvegetated = 0.8,
+    mean_vegetated = 20,
+    sd_vegetated = 2,
     units='co2eq/ha'
     ) #baseline
   )
@@ -47,11 +47,11 @@ model_params <- data.frame(
 # https://www.tjmahr.com/anatomy-of-a-logistic-growth-curve/
 # test: plot(logistic_growth(0:10))
 
-log_growth_general <- function(years, scale = 1, asymptote = 60, midpoint = NULL, year_midpoint = 4.3){
+log_growth_general <- function(years, scale = 1, asymptote = 60, midpoint, year_midpoint){
   asymptote = asymptote # max size of meadow
   scale=scale
   if (is.null(midpoint)){
-    midpoint=length(years)/(10/year_midpoint) #midpoint at 4.3 yrs
+    midpoint = length(years)/(10/year_midpoint) #midpoint at 4.3 yrs
   }
   seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
   return(seagrass_area_ha)
@@ -78,7 +78,7 @@ methane_per_vegetated_area <- function(area){
   return(meth_rest)
   }
 
-
+### build the scenarios simulations ###
 create_seagrass_exp <- function(model_params, n_sim){
   treatments <- c("Seed", "Transplant", "Infill")
   restoration_status <- c("Baseline", "Restoration")
@@ -99,7 +99,7 @@ create_seagrass_exp <- function(model_params, n_sim){
     project_size_ha = log_growth_general(
       years = year,
       scale = 1,
-      asymptote = 6,
+      asymptote = 60,
       midpoint = NULL,
       year_midpoint = 4.3
     )
@@ -122,6 +122,7 @@ create_seagrass_exp <- function(model_params, n_sim){
     plot_growth_infill,
     plot_growth_seed
   )
+  
   # create full-factorial combination of the above descriptive variables
   df <- expand.grid(
     treatments=treatments,

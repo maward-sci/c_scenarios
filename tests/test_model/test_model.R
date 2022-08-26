@@ -29,7 +29,7 @@ plot(transplant, xlab = "Year", main = "Transplant") #take a look at the shape o
 infill = log_growth_general(
     years = 1:10,
     scale = 1,
-    asymptote = 6,
+    asymptote = 60,
     midpoint = NULL,
     year_midpoint = 4.3
 )
@@ -41,9 +41,3 @@ plot(methane_rest_fun(1:10))
 # Run functions:
 df <- create_seagrass_exp(model_params)
 
-### note on where I am leaving off: 
-
-## I have the baselines for 3 scenarios (seed, transplant, and dredge) -  these are all the same
-# next: generate the rest scenarios based on the growth curves. the g curves for seed and transplant are good, 
-#but I need to shift the infill curve to the right. 
-# add these rest value in the df at the end

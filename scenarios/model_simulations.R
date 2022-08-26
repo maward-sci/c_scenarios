@@ -1,4 +1,6 @@
-source('./model/scen_generation.R')
+setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
+source('./model/scen_generation.R') #load everything from the scen_generation.R file (akin to running that file)
+library(ggplot2)
 
 df <- create_seagrass_exp(model_params, n_sim = 20)
 
