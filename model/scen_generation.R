@@ -45,26 +45,137 @@ methane_rest_fun <- function(area, year){
   return(meth_rest)
 }
 
-
-create_seagrass_exp <- function(model_params){
-  treatments <- c("Seed", "Transplant")
+create_seagrass_exp <- function(model_params, n_sim){
+  treatments <- c("Seed", "Transplant", "Infill")
   restoration_status <- c("Baseline", "Restoration")
   year <- seq(from = 0, to = 10)
-  plot_growth = cbind(year, project_size_ha = log_growth_transplant(year))
+  plot_growth_transplant = as.data.frame(cbind(
+    year,
+    project_size_ha = log_growth_general(
+      years = year,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 4.3
+      )
+  ))
+  plot_growth_transplant$treatments <- "Transplant"
+  plot_growth_infill = as.data.frame(cbind(
+    year,
+    project_size_ha = log_growth_general(
+      years = year,
+      scale = 1,
+      asymptote = 6,
+      midpoint = NULL,
+      year_midpoint = 4.3
+    )
+  ))
+  plot_growth_infill$treatments <- "Infill"
+  plot_growth_seed = as.data.frame(cbind(
+    year,
+    project_size_ha = log_growth_general(
+      years = year,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 5.55
+    )
+  ))
+  plot_growth_seed$treatments <- "Seed"
+  # Combine Growth Curves
+  plot_growth <- rbind(
+    plot_growth_transplant,
+    plot_growth_infill,
+    plot_growth_seed
+  )
+  # create full-factorial combination of the above descriptive variables
+  df <- expand.grid(
+    treatments=treatments,
+    restoration_status=restoration_status,
+    year=year,
+    sim = 1:n_sim
+    )
+  # create project size field
+  df <- df %>% left_join(plot_growth, by=c('year', 'treatments'), copy=TRUE)
+  # draw parameter values from the corresponding distribution
+  df$methane <- rnorm(
+    n = nrow(df),
+    mean = as.numeric(model_params['methane','mean_unvegetated']),
+    sd = as.numeric(model_params['methane','sd_unvegetated'])
+    )
+  # set methane for Restoration where it is dependenat on project_size_ha
+  df[which(df$restoration_status=='Restoration'), 'methane'] <- methane_per_vegetated_area(
+    df[which(df$restoration_status=='Restoration'), 'project_size_ha']
+    )
+  df$nitrous_oxide <- rnorm(
+    n = nrow(df), #draw from the normal distribution nrow times
+    mean = as.numeric(model_params['nitrous_oxide','mean_unvegetated']),
+    sd = as.numeric(model_params['nitrous_oxide','sd_unvegetated'])
+    )
+  # Modify some parameters based on descriptive variables
+  # x <- df[which(df$restoration_status == 'Restoration'),]
+  return(df)
+}
+
+
+create_seagrass_exp <- function(model_params){
+  treatments <- c("Seed", "Transplant", "Infill")
+  restoration_status <- c("Baseline", "Restoration")
+  year <- seq(from = 0, to = 10)
+  # Generate Growth Curves
+  plot_growth_transplant = as.data.frame(cbind(
+    year,
+    project_size_ha = log_growth_general(
+      years = year,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 4.3
+    )
+  ))
+  plot_growth_transplant$treatments <- "Transplant"
+  plot_growth_infill = as.data.frame(cbind(
+    year,
+    project_size_ha = log_growth_general(
+      years = year,
+      scale = 1,
+      asymptote = 6,
+      midpoint = NULL,
+      year_midpoint = 4.3
+    )
+  ))
+  plot_growth_infill$treatments <- "Infill"
+  plot_growth_seed = as.data.frame(cbind(
+    year,
+    project_size_ha = log_growth_general(
+      years = year,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 5.55
+    )
+  ))
+  plot_growth_seed$treatments <- "Seed"
+  # Combine Growth Curves
+  plot_growth <- rbind(
+    plot_growth_transplant,
+    plot_growth_infill,
+    plot_growth_seed
+    )
   # create full-factorial combination of the above descriptive variables
   df <- expand.grid(
     treatments=treatments,
     restoration_status=restoration_status,
     year=year)
   # create project size field
-  df <- df %>% left_join(plot_growth, by=c('year'), copy=TRUE)
+  df <- df %>% left_join(plot_growth, by=c('year', 'treatments'), copy=TRUE)
   # draw parameter values from the corresponding distribution
-  df$methane_b <- rnorm(
+  df$methane <- rnorm(
     n = nrow(df),
     mean = as.numeric(model_params['methane','mean']),
     sd = as.numeric(model_params['methane','sd'])
     ) #produces a list of selected values (nrows long) from the provided distribution 
-  df$nitrous_oxide_b <- rnorm(
+  df$nitrous_oxide <- rnorm(
     n = nrow(df),
     mean = as.numeric(model_params['nitrous_oxide','mean']),
     sd = as.numeric(model_params['nitrous_oxide','sd'])
@@ -72,4 +183,12 @@ create_seagrass_exp <- function(model_params){
   # Modify some parameters based on descriptive variables
   # x <- df[which(df$restoration_status == 'Restoration'),]
   return(df)
+}
+
+summarize_simulations <- function(df){
+  summary <- df %>%
+    group_by(treatments, restoration_status, year) %>%
+    summarize_if(.predicate = is.numeric,
+    .funs = c(mean = mean, sd = sd), na.rm=TRUE)
+  return(summary)
 }
