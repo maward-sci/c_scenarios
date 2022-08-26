@@ -14,28 +14,28 @@ model_params <- data.frame(
     mean_vegetated = 0.2,#0.2 Metirc tons CO2eq per ha per yr in veg sites
     sd_vegetated = 0.08,
     units='co2eq/ha'
-    ), #for baseline
+    ), 
   nitrous_oxide = list(
     mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
     sd_unvegetated = 0.02,
     mean_vegetated = 0.5,
     sd_vegetated = 0.15,
     units='co2eq/ha'
-    ), #for baseline
+    ), 
   biomass = list(
     mean_unvegetated = 0,
     sd_unvegetated = 0,
-    mean_vegetated = NULL,
-    sd_vegetated = NULL,
+    mean_vegetated = 0.4,
+    sd_vegetated = 0.02,
     units='co2eq/ha'
-    ), #for baseline
+    ),
   soil = list(
     mean_unvegetated = 8.125, #based very roughly on Oreska table 3 but needs work
     sd_unvegetated = 0.8,
     mean_vegetated = 20,
     sd_vegetated = 2,
     units='co2eq/ha'
-    ) #baseline
+    ) 
   )
 )
 
@@ -57,16 +57,13 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, midpoint, year_
   return(seagrass_area_ha)
 }
 
-#### methane as a function of area ###
+#### Methane as a function of area ###
 # methane at time 1 = area at time 1*0.0005
-
 #asympt at 0.2 so... 0.2/60 = 0.0033
 methane_per_vegetated_area <- function(area){
-  # Scales methane emissions as a function of area in hectares
-  # for vegetated habitats
+  # Scales methane emissions as a function of area in hectares for vegetated habitats
   # Parameters
-  # area: list
-  # The areas in hectares to transform
+  # area: list the areas in hectares to transform
   meth_rest <- area * as.numeric(
     rnorm(
       n = length(area),
@@ -76,7 +73,32 @@ methane_per_vegetated_area <- function(area){
   )
   # print(meth_rest)
   return(meth_rest)
-  }
+}
+
+#### N2O as a function of area ###
+NO_per_vegetated_area <- function(area){
+  NO_rest <- area * as.numeric(
+    rnorm(
+      n = length(area),
+      mean = as.numeric(model_params$mean_vegetated['nitrous_oxide']),
+      sd = as.numeric(model_params$sd_vegetated['nitrous_oxide'])
+    )
+  )
+  return(NO_rest)
+}
+
+#### Biomass C as a function of area ###
+BiomassC_per_vegetated_area <- function(area){
+  Biomass_rest <- area * as.numeric(
+    rnorm(
+      n = length(area),
+      mean = as.numeric(model_params$mean_vegetated['biomass']),
+      sd = as.numeric(model_params$sd_vegetated['biomass'])
+    )
+  )
+  return(Biomass_rest)
+}
+
 
 ### build the scenarios simulations ###
 create_seagrass_exp <- function(model_params, n_sim){
@@ -123,14 +145,15 @@ create_seagrass_exp <- function(model_params, n_sim){
     plot_growth_seed
   )
   
-  # create full-factorial combination of the above descriptive variables
+### create full-factorial combination of the above descriptive variables
   df <- expand.grid(
     treatments=treatments,
     restoration_status=restoration_status,
     year=year,
     sim = 1:n_sim
     )
-  # create project size field
+  
+### create project size field
   df <- df %>% left_join(plot_growth, by=c('year', 'treatments'), copy=TRUE)
   # draw parameter values from the corresponding distribution
   df$methane <- rnorm(
@@ -138,7 +161,7 @@ create_seagrass_exp <- function(model_params, n_sim){
     mean = as.numeric(model_params['methane','mean_unvegetated']),
     sd = as.numeric(model_params['methane','sd_unvegetated'])
     )
-  # set methane for Restoration where it is dependenat on project_size_ha
+  # set methane for Restoration where it is dependent on project_size_ha
   df[which(df$restoration_status=='Restoration'), 'methane'] <- methane_per_vegetated_area(
     df[which(df$restoration_status=='Restoration'), 'project_size_ha']
     )
@@ -147,6 +170,10 @@ create_seagrass_exp <- function(model_params, n_sim){
     mean = as.numeric(model_params['nitrous_oxide','mean_unvegetated']),
     sd = as.numeric(model_params['nitrous_oxide','sd_unvegetated'])
     )
+  df[which(df$restoration_status=='Restoration'), 'nitrous_oxide'] <- NO_per_vegetated_area(
+    df[which(df$restoration_status=='Restoration'), 'project_size_ha']
+  )
+  # set N2O for Restoration where it is dependant on project_size_ha
   # Modify some parameters based on descriptive variables
   # x <- df[which(df$restoration_status == 'Restoration'),]
   return(df)
