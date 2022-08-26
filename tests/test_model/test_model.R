@@ -1,3 +1,4 @@
+setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
 source('./model/scen_generation.R')
 ################################
 # Run Routines
@@ -32,7 +33,7 @@ infill = log_growth_general(
     midpoint = NULL,
     year_midpoint = 4.3
 )
-plot(log_growth_general, xlab = "Year", main = "Infill", ylim = range(0,8)) #take a look at the shape of the curve
+plot(infill, xlab = "Year", main = "Infill", ylim = range(0,8)) #take a look at the shape of the curve
 
 #did it even work? how do I tel... 
 plot(methane_rest_fun(1:10))
