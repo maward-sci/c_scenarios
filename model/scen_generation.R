@@ -57,46 +57,21 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, midpoint, year_
   return(seagrass_area_ha)
 }
 
-#### Methane as a function of area ###
-# methane at time 1 = area at time 1*0.0005
-#asympt at 0.2 so... 0.2/60 = 0.0033
-methane_per_vegetated_area <- function(area){
+
+### generic version 
+carbon_per_vegetated_area <- function(area, carbon_param){
   # Scales methane emissions as a function of area in hectares for vegetated habitats
   # Parameters
   # area: list the areas in hectares to transform
-  meth_rest <- area * as.numeric(
+  carbon_rest <- area * as.numeric(
     rnorm(
       n = length(area),
-      mean = as.numeric(model_params$mean_vegetated['methane']),
-      sd = as.numeric(model_params$sd_vegetated['methane'])
+      mean = as.numeric(model_params$mean_vegetated[carbon_param]),
+      sd = as.numeric(model_params$sd_vegetated[carbon_param])
     )
   )
   # print(meth_rest)
-  return(meth_rest)
-}
-
-#### N2O as a function of area ###
-NO_per_vegetated_area <- function(area){
-  NO_rest <- area * as.numeric(
-    rnorm(
-      n = length(area),
-      mean = as.numeric(model_params$mean_vegetated['nitrous_oxide']),
-      sd = as.numeric(model_params$sd_vegetated['nitrous_oxide'])
-    )
-  )
-  return(NO_rest)
-}
-
-#### Biomass C as a function of area ###
-BiomassC_per_vegetated_area <- function(area){
-  Biomass_rest <- area * as.numeric(
-    rnorm(
-      n = length(area),
-      mean = as.numeric(model_params$mean_vegetated['biomass']),
-      sd = as.numeric(model_params$sd_vegetated['biomass'])
-    )
-  )
-  return(Biomass_rest)
+  return(carbon_rest)
 }
 
 
@@ -162,16 +137,18 @@ create_seagrass_exp <- function(model_params, n_sim){
     sd = as.numeric(model_params['methane','sd_unvegetated'])
     )
   # set methane for Restoration where it is dependent on project_size_ha
-  df[which(df$restoration_status=='Restoration'), 'methane'] <- methane_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_ha']
+  df[which(df$restoration_status=='Restoration'), 'methane'] <- carbon_per_vegetated_area(
+    area = df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    carbon_param = 'methane'
     )
   df$nitrous_oxide <- rnorm(
     n = nrow(df), #draw from the normal distribution nrow times
     mean = as.numeric(model_params['nitrous_oxide','mean_unvegetated']),
     sd = as.numeric(model_params['nitrous_oxide','sd_unvegetated'])
     )
-  df[which(df$restoration_status=='Restoration'), 'nitrous_oxide'] <- NO_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_ha']
+  df[which(df$restoration_status=='Restoration'), 'nitrous_oxide'] <- carbon_per_vegetated_area(
+    df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    carbon_param = 'nitrous_oxide'
   )
   # set N2O for Restoration where it is dependant on project_size_ha
   # Modify some parameters based on descriptive variables
