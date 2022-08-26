@@ -1,6 +1,4 @@
-# Mel's happy code
-
-
+# Blue Carbon Restoration Sceanrios
 ## Here is how this works
 1. Look at the data files
     1. Scenarios Data.xlsx is a file I named with spaces in the name
