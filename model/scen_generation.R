@@ -83,7 +83,7 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, year_midpoint =
 carbon_per_vegetated_area <- function(area, carbon_param, model_params){
   #' carbon_per_vegetated_area
   #' 
-  #' @description Compute the carbon constituent value as a function of area
+  #' @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
   #'
   #' @param area list. a list of numeric values representing the area in hectares of a plot over time
   #' @param carbon_param string. one of `methane`, `nitrous_oxide`, `biomass`, or `soil`
@@ -95,7 +95,6 @@ carbon_per_vegetated_area <- function(area, carbon_param, model_params){
   #'  model_params = model_params
   #'  )
   #' @return list of length `length(area)` - The `carbon_param` values as a function of area given model_params
-  # Scales emissions as a function of area in hectares for vegetated habitats
   carbon_rest <- area * as.numeric(
     rnorm(
       n = length(area),
@@ -109,6 +108,18 @@ carbon_per_vegetated_area <- function(area, carbon_param, model_params){
 
 ### build the scenarios simulations ###
 create_seagrass_exp <- function(model_params, n_sim){
+  #' create_seagrass_exp
+  #' 
+  #' @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
+  #'
+  #' @param n_sim integer. how many simulations to run
+  #' @param model_params Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  
+  #' @usage create_seagrass_exp(
+  #'  model_params = model_params,
+  #'  n_sim = 10
+  #'  )
+  #' @return Dataframe with the simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
   treatments <- c("Seed", "Transplant", "Infill")
   restoration_status <- c("Baseline", "Restoration")
   year <- seq(from = 0, to = 10)
@@ -213,6 +224,17 @@ create_seagrass_exp <- function(model_params, n_sim){
 
 ## summarizes the simulation outputs 
 summarize_simulations <- function(df){
+  #' summarize_simulations
+  #' 
+  #' @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
+  #'
+  #' @param df Dataframe. The simulations resulting form `create_seagrass_exp()`
+  
+  #' @usage summarize_simulations(
+  #'  df = create_seagrass_exp(model_params,n_sims=5)
+  #'  )
+  #' @return Dataframe with the mean and standard deviation across simulations
+  #' for simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
   summary <- df %>%
     group_by(treatments, restoration_status, year) %>%
     summarize_if(.predicate = is.numeric,
@@ -221,35 +243,3 @@ summarize_simulations <- function(df){
 }
 
 
-
-# DOCSTRINGS TEMPLATE
-  #' Paste two items
-  #' 
-  #' @description This function pastes two items
-  #' together.  
-  #'
-  #' By using the description tag you'll notice that I
-  #' can have multiple paragraphs in the description section
-  #' 
-  #' @param x character. The first item to paste
-  #' @param y character. The second item to paste Defaults to "!" but
-  #' "?" would be pretty great too
-  #' @usage mypaste(x, y)
-  #' @return The inputs pasted together as a character string.
-  #' @details The inputs can be anything that can be input into
-  #' the paste function.
-  #' @note And here is a note. Isn't it nice?
-  #' @section I Must Warn You:
-  #' The reference provided is a good read.
-  #' \subsection{Other warning}{
-  #'   It is completely irrelevant to this function though.
-  #' }
-  #' 
-  #' @references Tufte, E. R. (2001). The visual display of 
-  #' quantitative information. Cheshire, Conn: Graphics Press.
-  #' @examples
-  #' mypaste(1, 3)
-  #' mypaste("hey", "you")
-  #' mypaste("single param")
-  #' @export
-  #' @importFrom base paste
