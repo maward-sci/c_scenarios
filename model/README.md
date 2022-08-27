@@ -25,6 +25,7 @@ See `scen_generation::model_params` for the parameter values for each of the abo
         1. This assumption is made to facilitate comparison among the restoration method and the baseline. The idea is that as the restored area grows, the amount of unrestored habitat that it represents also grows. That means that to compare the growing, let's say, carbon sequstration rates of restored seagrass meadows to those of an unrestored area half the size would be to overstate the net gain of the restoration. So this assumption lets us avoid that bias.
 
 **Carbon dynamics**:
+
     1. Carbon constituents are a vary between vegetated (`Infill`, `Seeding Restoration`, and `Transplant Restoration`) and unvegetated (`Baseline`) habitats.
         - Within vegetated habitats, differences in carbon constituent dynamics are driven solely by variation in the amount of vegetated habitat.
     1. carbon constituents are a function of `area` and their per-area values are drawn from a normal distribution with a mean and standard deviation that are derived from the literature (see `Citations` and `Parameter Estimation` sections (once they exist)).
