@@ -1,5 +1,5 @@
 setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
-source('./model/scen_generation.R')
+source('./model/scen_generation.R') #load everything from the scen_generation.R file, (eg functions) (akin to running that file)
 ################################
 # Run Routines
 ################################
@@ -29,11 +29,11 @@ plot(transplant, xlab = "Year", main = "Transplant") #take a look at the shape o
 infill = log_growth_general(
     years = 1:10,
     scale = 1,
-    asymptote = 6,
+    asymptote = 60,
     midpoint = NULL,
     year_midpoint = 4.3
 )
-plot(infill, xlab = "Year", main = "Infill", ylim = range(0,8)) #take a look at the shape of the curve
+plot(infill, xlab = "Year", main = "Infill", ylim = range(0,60)) #take a look at the shape of the curve
 
 #did it even work? how do I tel... 
 plot(methane_rest_fun(1:10))
@@ -41,9 +41,3 @@ plot(methane_rest_fun(1:10))
 # Run functions:
 df <- create_seagrass_exp(model_params)
 
-### note on where I am leaving off: 
-
-## I have the baselines for 3 scenarios (seed, transplant, and dredge) -  these are all the same
-# next: generate the rest scenarios based on the growth curves. the g curves for seed and transplant are good, 
-#but I need to shift the infill curve to the right. 
-# add these rest value in the df at the end
