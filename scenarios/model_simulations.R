@@ -8,18 +8,8 @@ ggplot(df %>% filter(restoration_status=='Restoration')) +
   geom_line(aes(x = year, y = methane, color = sim, group = sim)) +
   facet_grid(~restoration_status)
 
-summary <- summarize_simulations(df)
-#add total mean column
-summary$total_mean_carbon <- summary$soil_mean + 
-  summary$biomass_mean - 
-  summary$methane_mean - 
-  summary$nitrous_oxide_mean
+summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
 
-#add total SD column
-summary$total_sd_carbon <- summary$soil_sd + 
-  summary$biomass_sd - 
-  summary$methane_sd - 
-  summary$nitrous_oxide_sd
 
 #### plots ##### 
 

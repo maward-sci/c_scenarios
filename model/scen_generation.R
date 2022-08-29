@@ -239,7 +239,18 @@ summarize_simulations <- function(df){
     group_by(treatments, restoration_status, year) %>%
     summarize_if(.predicate = is.numeric,
     .funs = c(mean = mean, sd = sd), na.rm=TRUE)
+  #add total mean column
+  summary$total_mean_carbon <- summary$soil_mean + 
+    summary$biomass_mean - 
+    summary$methane_mean - 
+    summary$nitrous_oxide_mean
+  
+  #add total SD column
+  summary$total_sd_carbon <- summary$soil_sd + 
+    summary$biomass_sd - 
+    summary$methane_sd - 
+    summary$nitrous_oxide_sd
+  
   return(summary)
 }
-
 
