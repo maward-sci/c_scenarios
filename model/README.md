@@ -37,7 +37,6 @@ See `scen_generation::model_params` for the parameter values for each of the abo
 ### Docstrings
 **Docstring Template**
 ```
-
 # DOCSTRINGS TEMPLATE
 #' Paste two items
 #' 
@@ -69,4 +68,4 @@ See `scen_generation::model_params` for the parameter values for each of the abo
 #' mypaste("single param")
 #' @export
 #' @importFrom base paste
-````
+```
