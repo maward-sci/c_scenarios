@@ -110,7 +110,7 @@ carbon_per_vegetated_area <- function(area, carbon_param, model_params){
 create_seagrass_exp <- function(model_params, n_sim){
   #' create_seagrass_exp
   #' 
-  #' @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
+  #' @description Run a full set of n_sim simulations of predefined restoration treatments (i.e., "scenarios").
   #'
   #' @param n_sim integer. how many simulations to run
   #' @param model_params Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
