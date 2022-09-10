@@ -123,13 +123,13 @@ create_seagrass_exp <- function(model_params, n_sim){
   #' @return Dataframe with the simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
   treatments <- c("Seed", "Transplant", "Infill")
   restoration_status <- c("Baseline", "Restoration")
-  year <- seq(from = 0, to = 10)
-  plot_growth <- simulate_plot_growth(years=year)
+  years <- seq(from = 0, to = 10)
+  plot_growth <- simulate_plot_growth(years=years)
 ### create full-factorial combination of the above descriptive variables
   df <- expand.grid(
     treatments=treatments,
     restoration_status=restoration_status,
-    year=year,
+    year=years,
     sim = 1:n_sim
     )
   
@@ -183,38 +183,71 @@ create_seagrass_exp <- function(model_params, n_sim){
   return(df)
 }
 
-simulate_plot_growth <- function(years){
+simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
+  # Transplant scenario
   plot_growth_transplant = as.data.frame(cbind(
     years,
-    project_size_m2 = log_growth_general(
+    vegetated_area_m2 = log_growth_general(
       years = years,
       scale = 1,
-      asymptote = 60,
+      asymptote = plot_growth_asymptote,
       midpoint = NULL,
       year_midpoint = 4.3
-      )
+      ),
+    unvegetated_area_m2 = log_growth_general(
+      years = years,
+      scale = 1,
+      asymptote = plot_growth_asymptote,
+      midpoint = NULL,
+      year_midpoint = 4.3
+      ),
+    infill_area_m2 = 0
   ))
   plot_growth_transplant$treatments <- "Transplant"
+  # InFill scenario
   plot_growth_infill = as.data.frame(cbind(
     years,
-    project_size_m2 = log_growth_general(
-      years = years,
-      scale = 1,
-      asymptote = 60,
-      midpoint = NULL,
-      year_midpoint = 4.3
-    )
+    vegetated_area_m2 = c(
+      0,
+      log_growth_general(
+        years = years,
+        scale = 1,
+        asymptote = plot_growth_asymptote,
+        midpoint = NULL,
+        year_midpoint = 4.3
+      )[1:length(years)-1]
+    ),
+    unvegetated_area_m2 = c(
+      0,
+      log_growth_general(
+        years = years,
+        scale = 1,
+        asymptote = plot_growth_asymptote,
+        midpoint = NULL,
+        year_midpoint = 4.3
+      )[1:length(years)-1]
+    ),
+    infill_area_m2 = c(plot_growth_asymptote, rep(0, times = (length(years)-1)))
   ))
   plot_growth_infill$treatments <- "Infill"
+  # Seed scenario
   plot_growth_seed = as.data.frame(cbind(
     years,
-    project_size_m2 = log_growth_general(
+    vegetated_area_m2 = log_growth_general(
       years = years,
       scale = 1,
-      asymptote = 60,
+      asymptote = plot_growth_asymptote,
       midpoint = NULL,
       year_midpoint = 5.55
-    )
+    ),
+    unvegetated_area_m2 = log_growth_general(
+      years = years,
+      scale = 1,
+      asymptote = plot_growth_asymptote,
+      midpoint = NULL,
+      year_midpoint = 4.3
+      ),
+    infill_area_m2 = 0
   ))
   plot_growth_seed$treatments <- "Seed"
   # Combine Growth Curves
