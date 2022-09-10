@@ -60,7 +60,7 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, year_midpoint =
   #' Used to compute the `midpoint` parameter, unless `midpoint` is specified.
   #' @param midpoint integer  Optionally take control of the midpoint parameter in the logistic growth equation
   #' if used, ignores year_midpoint argument.
-  
+  #'
   #' @usage transplant = log_growth_general(
   #'                        years = 1:10,
   #'                        scale = 1,
@@ -69,13 +69,14 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, year_midpoint =
   #'                        year_midpoint = 4.3
   #'                      )
   #' @return list of length `length(years)` - The logistic growth values of the response variable over time.
+  #' In this model, that var is seagrass area in square-meters
   asymptote = asymptote # max size of meadow
   scale=scale
   if (is.null(midpoint)){
     midpoint = length(years)/(10/year_midpoint) #midpoint at 4.3 yrs
   }
-  seagrass_area_ha <-asymptote / (1 + exp((midpoint - years)*scale))
-  return(seagrass_area_ha)
+  seagrass_area_m2 <-asymptote / (1 + exp((midpoint - years)*scale))
+  return(seagrass_area_m2)
 }
 
 
@@ -123,46 +124,7 @@ create_seagrass_exp <- function(model_params, n_sim){
   treatments <- c("Seed", "Transplant", "Infill")
   restoration_status <- c("Baseline", "Restoration")
   year <- seq(from = 0, to = 10)
-  plot_growth_transplant = as.data.frame(cbind(
-    year,
-    project_size_ha = log_growth_general(
-      years = year,
-      scale = 1,
-      asymptote = 60,
-      midpoint = NULL,
-      year_midpoint = 4.3
-      )
-  ))
-  plot_growth_transplant$treatments <- "Transplant"
-  plot_growth_infill = as.data.frame(cbind(
-    year,
-    project_size_ha = log_growth_general(
-      years = year,
-      scale = 1,
-      asymptote = 60,
-      midpoint = NULL,
-      year_midpoint = 4.3
-    )
-  ))
-  plot_growth_infill$treatments <- "Infill"
-  plot_growth_seed = as.data.frame(cbind(
-    year,
-    project_size_ha = log_growth_general(
-      years = year,
-      scale = 1,
-      asymptote = 60,
-      midpoint = NULL,
-      year_midpoint = 5.55
-    )
-  ))
-  plot_growth_seed$treatments <- "Seed"
-  # Combine Growth Curves
-  plot_growth <- rbind(
-    plot_growth_transplant,
-    plot_growth_infill,
-    plot_growth_seed
-  )
-  
+  plot_growth <- simulate_plot_growth(years=year)
 ### create full-factorial combination of the above descriptive variables
   df <- expand.grid(
     treatments=treatments,
@@ -179,9 +141,9 @@ create_seagrass_exp <- function(model_params, n_sim){
     mean = as.numeric(model_params['methane','mean_unvegetated']),
     sd = as.numeric(model_params['methane','sd_unvegetated'])
     )
-  # set methane for Restoration where it is dependent on project_size_ha
+  # set methane for Restoration where it is dependent on project_size_m2
   df[which(df$restoration_status=='Restoration'), 'methane'] <- carbon_per_vegetated_area(
-    area = df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    area = df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
     carbon_param = 'methane',
     model_params = model_params
     )
@@ -191,7 +153,7 @@ create_seagrass_exp <- function(model_params, n_sim){
     sd = as.numeric(model_params['nitrous_oxide','sd_unvegetated'])
     )
   df[which(df$restoration_status=='Restoration'), 'nitrous_oxide'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
     carbon_param = 'nitrous_oxide',
     model_params = model_params
   )
@@ -201,7 +163,7 @@ create_seagrass_exp <- function(model_params, n_sim){
     sd = as.numeric(model_params['biomass','sd_unvegetated'])
   )
   df[which(df$restoration_status=='Restoration'), 'biomass'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
     carbon_param = 'biomass',
     model_params = model_params
   )
@@ -211,14 +173,57 @@ create_seagrass_exp <- function(model_params, n_sim){
     sd = as.numeric(model_params['soil','sd_unvegetated'])
   )
   df[which(df$restoration_status=='Restoration'), 'soil'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_ha'],
+    df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
     carbon_param = 'soil',
     model_params = model_params
   )
-  # set N2O for Restoration where it is dependant on project_size_ha
+  # set N2O for Restoration where it is dependant on project_size_m2
   # Modify some parameters based on descriptive variables
   # x <- df[which(df$restoration_status == 'Restoration'),]
   return(df)
+}
+
+simulate_plot_growth <- function(years){
+  plot_growth_transplant = as.data.frame(cbind(
+    years,
+    project_size_m2 = log_growth_general(
+      years = years,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 4.3
+      )
+  ))
+  plot_growth_transplant$treatments <- "Transplant"
+  plot_growth_infill = as.data.frame(cbind(
+    years,
+    project_size_m2 = log_growth_general(
+      years = years,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 4.3
+    )
+  ))
+  plot_growth_infill$treatments <- "Infill"
+  plot_growth_seed = as.data.frame(cbind(
+    years,
+    project_size_m2 = log_growth_general(
+      years = years,
+      scale = 1,
+      asymptote = 60,
+      midpoint = NULL,
+      year_midpoint = 5.55
+    )
+  ))
+  plot_growth_seed$treatments <- "Seed"
+  # Combine Growth Curves
+  plot_growth <- rbind(
+    plot_growth_transplant,
+    plot_growth_infill,
+    plot_growth_seed
+  )
+  return(plot_growth)
 }
 
 
