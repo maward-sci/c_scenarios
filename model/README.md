@@ -7,6 +7,7 @@ We simulate carbon dynamics across a range of methods that represent real-world 
 $$
 C_{\mathrm total, t} = C_{\mathrm sed,t} + C_{\mathrm biomass, t} - (C_{\mathrm methane, t} + C_{\mathrm nox, t})
 $$
+
 where:
 
 $C_t$    : Total Carbon Sequestration $(grams / year)$ at year $t$
