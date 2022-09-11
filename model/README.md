@@ -2,33 +2,63 @@
 ## Blue Carbon Restoration Scenarios
 We simulate carbon dynamics across a range of methods that represent real-world approaches to seagrass restoration. Our restoration methods are: `Infill`, `Seeding Restoration`, `Transplant Restoration`. We also simulate a `Baseline` scenario.
 
-The model is specified as:
-```math
-C_t = C_sed_t + C_biomass_t - (C_methane_t + C_nox_t)
-
+---
+## Model Specification
+$$
+C_{\mathrm total, t} = C_{\mathrm sed,t} + C_{\mathrm biomass, t} - (C_{\mathrm methane, t} + C_{\mathrm nox, t})
+$$
 where:
-    C_t: Total Carbon Sequestration at year t (grams / year)
+
+$C_t$    : Total Carbon Sequestration $(grams / year)$ at year $t$
+
 and:
-    C_sed_t: Sediment Carbon at year t (grams / year)
-    C_biomass_t:  Biomass Carbon at year t (grams / year)
-    C_methane_t:  Methane Carbon at year t (grams / year)
-    C_nox_t: Nitrous Oxide Carbon at year t (grams / year)
-```
+
+$C_{\mathrm sed,t}$: Sediment Carbon $(grams / year)$ at year $t$
+
+$C_{\mathrm biomass, t}$:  Biomass Carbon $(grams / year)$ at year $t$
+
+$C_{\mathrm methane, t}$:  Methane Carbon $(grams / year)$ at year $t$
+
+$C_{\mathrm nox, t}$: Nitrous Oxide Carbon $(grams / year)$ at year $t$
+
+----
+
 The indvidual constituents are defined below.
 
-```math
-C_sed_t = (A_veg_t * \rho_veg * d_acc_t) + (A_unveg_t * \rho_unveg * d_acc_t) + (A_infill_t * \rho_infill * p_remin * d_infill_t)
+---
+### Sediment
+$$
+C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) + (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t})
+$$
 
-C_veg_t = Carbon content for sediment (grams / year) at time t
-A_veg_t = Area of vegetated habitat (m^{2}) at time t
-\rho_veg = Density of carbon in vegetated habitat (grams / m^{3})
-\rho_unveg = Density of carbon in unvegetated habitat (grams / m^{3})
-\rho_infill = Density of carbon in infill sediment (grams / m^{3})
 d_acc_t = Depth of sediment accretion at time t (m)
 d_infill_t = Depth of infill sediment applied at time t (m)
 
-$A = \pi*r^{2}$
-```
+where:
+
+$C_{\mathrm sed,t}$: Sediment Carbon at year t $(grams / year)$
+
+and:
+
+$A_{\mathrm veg,t}=$ Area of vegetated habitat $(m^{2})$ at time $t$
+
+$A_{\mathrm unveg,t}=$ Area of unvegetated habitat $(m^{2})$ at time $t$
+
+$A_{\mathrm infill,t}=$ Area of infill $(m^{2})$ at time $t$
+
+$\rho_{\mathrm veg}=$ Density of carbon in vegetated habitat $(grams / m^{3})$
+
+$\rho_{\mathrm unveg}=$ Density of carbon in unvegetated habitat $(grams / m^{3})$
+
+$\rho_{\mathrm infill}=$ Density of carbon in infill sediment $(grams / m^{3})$
+
+$d_{\mathrm acc,t}=$ Depth of sediment accretion $(m)$ at time $t$ 
+
+$d_{\mathrm infill,t}=$ Depth of infill sediment applied $(m)$ at time $t$ 
+
+----
+
+
 ## Parameters
 We simulate:
 
