@@ -159,16 +159,7 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
   df <- df %>% left_join(plot_growth, by = c("year", "treatments"), copy = TRUE)
   # draw parameter values from the corresponding distribution
   # METHANE
-  df$methane <- rnorm(
-    n = nrow(df),
-    mean = as.numeric(methane["mean_unvegetated"]),
-    sd = as.numeric(methane["sd_unvegetated"])
-    )
-  # set methane for Restoration where it is dependent on vegetated_area_m2
-  df[which(df$restoration_status=="Restoration"), "methane"] <- carbon_per_vegetated_area(
-    area = df[which(df$restoration_status == "Restoration"), "vegetated_area_m2"],
-    carbon_param = methane
-    )
+  df <- simulate_methane(model_df = df, methane_df = methane)
   # NOX
   df <- simulate_nox(model_df = df, nox_df = nitrous_oxide)
   # BIOMASS
@@ -222,18 +213,38 @@ simulate_nox <- function(model_df, nox_df){
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_unvegetated"]),
     sd = as.numeric(nox_df["sd_unvegetated"])
-    )
+    ) * model_df$unvegetated_area_m2
   model_df$nox_carbon_vegetated <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_vegetated"]),
     sd = as.numeric(nox_df["sd_vegetated"])
-    )
+    ) * model_df$vegetated_area_m2
   model_df$nox_carbon_infill <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_infill"]),
     sd = as.numeric(nox_df["sd_infill"])
-    )
+    ) * model_df$infill_area_m2
   model_df$nox_carbon_total <- model_df$nox_carbon_unvegetated + model_df$nox_carbon_vegetated + model_df$nox_carbon_infill
+  return(model_df)
+}
+
+simulate_methane <- function(model_df, methane_df){
+  model_df$methane_carbon_unvegetated <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(methane_df["mean_unvegetated"]),
+    sd = as.numeric(methane_df["sd_unvegetated"])
+    ) * model_df$unvegetated_area_m2
+  model_df$methane_carbon_vegetated <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(methane_df["mean_vegetated"]),
+    sd = as.numeric(methane_df["sd_vegetated"])
+    ) * model_df$vegetated_area_m2
+  model_df$methane_carbon_infill <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(methane_df["mean_infill"]),
+    sd = as.numeric(methane_df["sd_infill"])
+    ) * model_df$infill_area_m2
+  model_df$methane_carbon_total <- model_df$methane_carbon_unvegetated + model_df$methane_carbon_vegetated + model_df$methane_carbon_infill
   return(model_df)
 }
 
