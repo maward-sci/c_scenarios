@@ -127,7 +127,16 @@ carbon_per_vegetated_area <- function(area, carbon_param){
 
 
 ### build the scenarios simulations ###
-create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
+create_seagrass_exp <- function(
+  n_sim,
+  methane,
+  nitrous_oxide,
+  soil,
+  biomass,
+  treatments = c("Seed", "Transplant", "Infill"),
+  restoration_status = c("Baseline", "Restoration"),
+  n_years = 10
+  ){
   #" create_seagrass_exp
   #" 
   #" @description Run a full set of n_sim simulations of predefined restoration treatments (i.e., "scenarios").
@@ -137,15 +146,16 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
   #" @param nitrous_oxide Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
   #" @param soil Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
   #" @param biomass Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  #" @param treatments list of treatments to simulate
+  #" @param restoration_status List of some combo of "Baseline" and "Restoration"
+  #" @param n_years integer The number of years to simulate
   
   #" @usage create_seagrass_exp(
   #"  model_params = model_params,
   #"  n_sim = 10
   #"  )
   #" @return Dataframe with the simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
-  treatments <- c("Seed", "Transplant", "Infill")
-  restoration_status <- c("Baseline", "Restoration")
-  years <- seq(from = 0, to = 10)
+  years <- seq(from = 0, to = n_years)
   plot_growth <- simulate_plot_growth(years=years)
 ### create full-factorial combination of the above descriptive variables
   df <- expand.grid(
@@ -154,7 +164,6 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
     year = years,
     sim = 1:n_sim
     )
-  
 ### create project size field
   df <- df %>% left_join(plot_growth, by = c("year", "treatments"), copy = TRUE)
   # draw parameter values from the corresponding distribution
@@ -326,7 +335,11 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
 
 
 ## summarizes the simulation outputs 
-summarize_simulations <- function(df){
+summarize_simulations <- function(
+  df,
+  treatments = c("Seed", "Transplant", "Infill"),
+  restoration_status = c("Baseline", "Restoration")
+  ){
   #" summarize_simulations
   #" 
   #" @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
@@ -343,16 +356,16 @@ summarize_simulations <- function(df){
     summarize_if(.predicate = is.numeric,
     .funs = c(mean = mean, sd = sd), na.rm=TRUE)
   #add total mean column
-  summary$total_mean_carbon <- summary$soil_mean + 
-    summary$biomass_mean - 
-    summary$methane_mean - 
-    summary$nitrous_oxide_mean
+  summary$total_mean_carbon <- summary$soil_carbon_total_mean + 
+    summary$biomass_carbon_mean - 
+    summary$methane_carbon_total_mean - 
+    summary$nox_carbon_total_mean
   
   #add total SD column
-  summary$total_sd_carbon <- summary$soil_sd + 
-    summary$biomass_sd - 
-    summary$methane_sd - 
-    summary$nitrous_oxide_sd
+  summary$total_sd_carbon <- summary$soil_carbon_total_sd + 
+    summary$biomass_carbon_sd - 
+    summary$methane_carbon_total_sd - 
+    summary$nox_carbon_total_sd
   
   return(summary)
 }
