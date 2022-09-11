@@ -39,5 +39,7 @@ plot(infill, xlab = "Year", main = "Infill", ylim = range(0,60)) #take a look at
 plot(methane_rest_fun(1:10))
 
 # Run functions:
-df <- create_seagrass_exp(model_params)
+df <- create_seagrass_exp(n_sim=1, methane=methane, nitrous_oxide = nitrous_oxide, biomass=biomass, soil=soil)
+
+
 
