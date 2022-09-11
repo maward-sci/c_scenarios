@@ -181,7 +181,7 @@ $$
 
 **Growth of seagress meadows**:
 
- 1. The area of seagrass meadows grows over time as a `logistic` curve, meaning growth is initially somewhat slower, accelerates for a period, and then tapers off, or saturates, at some level that represents that maximum potential area for the restored seagrass meadow.
+ 1. The area of seagrass meadows grows over time as a `logistic` curve, meaning growth is initially somewhat slower, accelerates for a period, and then tapers off, or saturates, at some level that represents the maximum potential area for the restored seagrass meadow.
  2. The logistic growth curve for seagrass meadows depends on the restoration scenario.
  3. `Baseline` simulations for each restoration method grow in area at the same rate as their respective restoration scenario; differences in carbon dynamics are driven solely by the fact that `Baseline` scenarios are comprised of unvegetated habitat.
      1. This assumption is made to facilitate comparison among the restoration method and the baseline. The idea is that as the restored area grows, the amount of unrestored habitat that it represents also grows. That means that to compare the growing, let's say, carbon sequstration rates of restored seagrass meadows to those of an unrestored area half the size would be to overstate the net gain of the restoration. So this assumption lets us avoid that bias.
