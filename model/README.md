@@ -168,11 +168,9 @@ where,
 
 $$
 \mu_{\mathrm veg}=20
-
-\\
-
+$$
+$$
 \sigma_{\mathrm veg}=2
-
 $$
 ## Assumptions
 **Terms**:
