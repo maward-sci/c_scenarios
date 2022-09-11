@@ -6,39 +6,56 @@ library(docstring)
 ################################
 # Define Paramters
 ################################
+# Create the class we will use to store model parameters
+# This just provides a single object where all the params are located for conveniance.
+# setClass(
+#   "ModelParams",
+#   slots=list(
+#     methane="data.frame",
+#     nitrous_oxide="data.frame",
+#     biomass="data.frame",
+#     soil="data.frame"
+#   ))
 # DataFrame with Model Parameters (roughly estiamted from Oreska et al. Table 3)
-model_params <- data.frame(
-  rbind(
-  methane = list(
+methane = data.frame(
     mean_unvegetated = 0.025,#0.025 met T co2eq per ha per yr in unveg sites
     sd_unvegetated = 0.01,
     mean_vegetated = 0.2,#0.2 Metirc tons CO2eq per ha per yr in veg sites
     sd_vegetated = 0.08,
-    units='co2eq/ha'
-    ), 
-  nitrous_oxide = list(
-    mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
-    sd_unvegetated = 0.02,
-    mean_vegetated = 0.5,
-    sd_vegetated = 0.15,
-    units='co2eq/ha'
-    ), 
-  biomass = list(
-    mean_unvegetated = 0,
-    sd_unvegetated = 0,
-    mean_vegetated = 0.4,
-    sd_vegetated = 0.02,
-    units='co2eq/ha'
-    ),
-  soil = list(
-    mean_unvegetated = 8.125, #based very roughly on Oreska table 3 but needs work
-    sd_unvegetated = 0.8,
-    mean_vegetated = 20,
-    sd_vegetated = 2,
-    units='co2eq/ha'
-    ) 
+    units='co2eq/ha',
+    mean_infill_vegetated = 0.3,
+    sd_infill_vegetated = 0.1
+    )
+nitrous_oxide = data.frame(
+  mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
+  sd_unvegetated = 0.02,
+  mean_vegetated = 0.5,
+  sd_vegetated = 0.15,
+  units='co2eq/ha'
   )
-)
+biomass = data.frame(
+  mean_unvegetated = 0,
+  sd_unvegetated = 0,
+  mean_vegetated = 0.4,
+  sd_vegetated = 0.02,
+  units=''
+  )
+soil = data.frame(
+  mean_unvegetated = 8.125, #based very roughly on Oreska table 3 but needs work
+  sd_unvegetated = 0.8,
+  mean_vegetated = 20, # grams / cubed-meter # Mel says 3000 is a better estimate.
+  sd_vegetated = 2,
+  units='grams/square-meter',
+  infill_proportion_remin=0.5 # perecent
+  )
+
+# model_params <- new(
+#   "ModelParams",
+#   methane=methane,
+#   nitrous_oxide=nitrous_oxide,
+#   biomass=biomass,
+#   soil=soil
+# )
 
 ################################
 # Define Functions
@@ -81,26 +98,24 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, year_midpoint =
 
 
 ### generic version 
-carbon_per_vegetated_area <- function(area, carbon_param, model_params){
+carbon_per_vegetated_area <- function(area, carbon_param){
   #' carbon_per_vegetated_area
   #' 
   #' @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
   #'
   #' @param area list. a list of numeric values representing the area in hectares of a plot over time
-  #' @param carbon_param string. one of `methane`, `nitrous_oxide`, `biomass`, or `soil`
-  #' @param model_params Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  #' @param carbon_param Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param: one of `methane`, `nitrous_oxide`, `biomass`, or `soil`
   
   #' @usage carbon_per_vegetated_area(
   #'  area = 1:10,
-  #'  carbon_param = 'methane',
-  #'  model_params = model_params
+  #'  carbon_param = 'methane'
   #'  )
-  #' @return list of length `length(area)` - The `carbon_param` values as a function of area given model_params
+  #' @return list of length `length(area)` - The `carbon_param` values as a function of area
   carbon_rest <- area * as.numeric(
     rnorm(
       n = length(area),
-      mean = as.numeric(model_params$mean_vegetated[carbon_param]),
-      sd = as.numeric(model_params$sd_vegetated[carbon_param])
+      mean = as.numeric(carbon_param$mean_vegetated),
+      sd = as.numeric(carbon_param$sd_vegetated)
     )
   )
   return(carbon_rest)
@@ -108,13 +123,16 @@ carbon_per_vegetated_area <- function(area, carbon_param, model_params){
 
 
 ### build the scenarios simulations ###
-create_seagrass_exp <- function(model_params, n_sim){
+create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
   #' create_seagrass_exp
   #' 
   #' @description Run a full set of n_sim simulations of predefined restoration treatments (i.e., "scenarios").
   #'
   #' @param n_sim integer. how many simulations to run
-  #' @param model_params Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  #' @param methane Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  #' @param nitrous_oxide Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  #' @param soil Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
+  #' @param biomass Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
   
   #' @usage create_seagrass_exp(
   #'  model_params = model_params,
@@ -138,44 +156,40 @@ create_seagrass_exp <- function(model_params, n_sim){
   # draw parameter values from the corresponding distribution
   df$methane <- rnorm(
     n = nrow(df),
-    mean = as.numeric(model_params['methane','mean_unvegetated']),
-    sd = as.numeric(model_params['methane','sd_unvegetated'])
+    mean = as.numeric(methane['mean_unvegetated']),
+    sd = as.numeric(methane['sd_unvegetated'])
     )
-  # set methane for Restoration where it is dependent on project_size_m2
+  # set methane for Restoration where it is dependent on vegetated_area_m2
   df[which(df$restoration_status=='Restoration'), 'methane'] <- carbon_per_vegetated_area(
-    area = df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
-    carbon_param = 'methane',
-    model_params = model_params
+    area = df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
+    carbon_param = methane
     )
   df$nitrous_oxide <- rnorm(
     n = nrow(df), #draw from the normal distribution nrow times
-    mean = as.numeric(model_params['nitrous_oxide','mean_unvegetated']),
-    sd = as.numeric(model_params['nitrous_oxide','sd_unvegetated'])
+    mean = as.numeric(nitrous_oxide['mean_unvegetated']),
+    sd = as.numeric(nitrous_oxide['sd_unvegetated'])
     )
   df[which(df$restoration_status=='Restoration'), 'nitrous_oxide'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
-    carbon_param = 'nitrous_oxide',
-    model_params = model_params
+    df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
+    carbon_param = nitrous_oxide
   )
   df$biomass <- rnorm(
     n = nrow(df), #draw from the normal distribution nrow times
-    mean = as.numeric(model_params['biomass','mean_unvegetated']),
-    sd = as.numeric(model_params['biomass','sd_unvegetated'])
+    mean = as.numeric(biomass['mean_unvegetated']),
+    sd = as.numeric(biomass['sd_unvegetated'])
   )
   df[which(df$restoration_status=='Restoration'), 'biomass'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
-    carbon_param = 'biomass',
-    model_params = model_params
+    df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
+    carbon_param = biomass
   )
   df$soil <- rnorm(
     n = nrow(df), #draw from the normal distribution nrow times
-    mean = as.numeric(model_params['soil','mean_unvegetated']),
-    sd = as.numeric(model_params['soil','sd_unvegetated'])
+    mean = as.numeric(soil['mean_unvegetated']),
+    sd = as.numeric(soil['sd_unvegetated'])
   )
   df[which(df$restoration_status=='Restoration'), 'soil'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'project_size_m2'],
-    carbon_param = 'soil',
-    model_params = model_params
+    df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
+    carbon_param = soil
   )
   # set N2O for Restoration where it is dependant on project_size_m2
   # Modify some parameters based on descriptive variables
@@ -186,7 +200,7 @@ create_seagrass_exp <- function(model_params, n_sim){
 simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   # Transplant scenario
   plot_growth_transplant = as.data.frame(cbind(
-    years,
+    year = years,
     vegetated_area_m2 = log_growth_general(
       years = years,
       scale = 1,
@@ -206,7 +220,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   plot_growth_transplant$treatments <- "Transplant"
   # InFill scenario
   plot_growth_infill = as.data.frame(cbind(
-    years,
+    year = years,
     vegetated_area_m2 = c(
       0,
       log_growth_general(
@@ -232,7 +246,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   plot_growth_infill$treatments <- "Infill"
   # Seed scenario
   plot_growth_seed = as.data.frame(cbind(
-    years,
+    year = years,
     vegetated_area_m2 = log_growth_general(
       years = years,
       scale = 1,
@@ -291,4 +305,3 @@ summarize_simulations <- function(df){
   
   return(summary)
 }
-

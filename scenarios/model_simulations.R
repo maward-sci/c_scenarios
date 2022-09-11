@@ -2,7 +2,7 @@ setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
 source('./model/scen_generation.R') #load everything from the scen_generation.R file (akin to running that file)
 library(ggplot2)
 
-df <- create_seagrass_exp(model_params, n_sim = 20) #create a df of the simulated data (pulled form distributions)??? 
+df <- create_seagrass_exp(n_sim = 20, methane=methane, nitrous_oxide=nitrous_oxide, biomass=biomass,soil=soil) #create a df of the simulated data (pulled form distributions)??? 
 
 ggplot(df %>% filter(restoration_status=='Restoration')) +
   geom_line(aes(x = year, y = methane, color = sim, group = sim)) +
