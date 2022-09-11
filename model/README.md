@@ -66,6 +66,8 @@ $d_{\mathrm acc,t}=$ Depth of sediment accretion $(m)$ at time $t$
 
 $d_{\mathrm infill,t}=$ Depth of infill sediment applied $(m)$ at time $t$ 
 
+$p_{\mathrm remin}=$ Proportion of infill Carbon that remineralizes $(%)$ upon application
+
 ----
 ### *Biomass*
 $$
