@@ -28,11 +28,11 @@ and:
 
 $C_{\mathrm sed,t}$: Sediment Carbon $(grams / year)$ at year $t$
 
-$C_{\mathrm biomass, t}$:  Biomass Carbon $(grams / year)$ at year $t$
+$C_{\mathrm biomass, t}$:  Carbon content from biomass $(grams / year)$ at year $t$
 
-$C_{\mathrm methane, t}$:  Methane Carbon $(grams / year)$ at year $t$
+$C_{\mathrm methane, t}$:  Methane Carbon gain or loss $(grams / year)$ at year $t$
 
-$C_{\mathrm nox, t}$: Nitrous Oxide Carbon $(grams / year)$ at year $t$
+$C_{\mathrm nox, t}$: Nitrous Oxide Carbon gain or loss $(grams / year)$ at year $t$
 
 ----
 
@@ -46,7 +46,7 @@ $$
 
 where:
 
-$C_{\mathrm sed,t}$: Sediment Carbon at year t $(grams / year)$
+$C_{\mathrm sed,t}$: Sediment Carbon $(grams / year)$ at year $t$ 
 
 and:
 
@@ -115,7 +115,7 @@ $$
 
 where:
 
-$C_{\mathrm nox,t}$: Sediment Carbon at year t $(grams / year)$
+$C_{\mathrm nox,t}$: Nitrous Oxide Carbon gain or loss $(grams / year)$ at year $t$ 
 
 and:
 
