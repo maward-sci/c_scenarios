@@ -188,7 +188,7 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
     carbon_param = biomass
   )
   # SOIL
-  df <- simulate.soil(model_df = df, soil_df = soil, depth_infill_m = 0.2, depth_veg_accretion_m = 0.2, depth_unveg_accretion_m = 0.2)
+  df <- simulate_soil(model_df = df, soil_df = soil, depth_infill_m = 0.2, depth_veg_accretion_m = 0.2, depth_unveg_accretion_m = 0.2)
   # df[which(df$restoration_status=="Restoration"), "soil"] <- carbon_per_vegetated_area(
   #   df[which(df$restoration_status=="Restoration"), "vegetated_area_m2"],
   #   carbon_param = soil
@@ -199,11 +199,12 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
   return(df)
 }
 
-simulate.soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m){
+simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m){
   # pull together the three soil constituents:
     # Veg Natural soil contribution: Area * rho_soil_veg * depth_veg_accretion_m
     # UnVeg Natural soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m
     # Infill soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m * percent_remineralized
+  # Carbon sequestration amounts are computed as columns in model_df with units of grams / year
   model_df$soil_carbon_veg <- rnorm(n = nrow(df), as.numeric(soil_df$mean_vegetated), sd = as.numeric(soil_df$sd_vegetated)) * model_df$vegetated_area_m2 * depth_veg_accretion_m
   model_df$soil_carbon_unveg <- rnorm(n = nrow(df), as.numeric(soil_df$mean_unvegetated), sd = as.numeric(soil_df$sd_unvegetated)) * model_df$unvegetated_area_m2 * depth_unveg_accretion_m
   model_df$soil_carbon_infill <- rnorm(n = nrow(df), as.numeric(soil_df$mean_infill), sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m
