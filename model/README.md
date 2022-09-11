@@ -2,6 +2,8 @@
 ## Blue Carbon Restoration Scenarios
 We simulate carbon dynamics across a range of methods that represent real-world approaches to seagrass restoration. Our restoration methods are: `Infill`, `Seeding Restoration`, `Transplant Restoration`. We also simulate a `Baseline` scenario.
 
+Model Specified as: $A = \pi*r^{2}$
+
 ## Parameters
 We simulate:
 
