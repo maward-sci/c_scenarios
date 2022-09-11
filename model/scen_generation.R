@@ -45,7 +45,9 @@ soil = data.frame(
   sd_unvegetated = 0.8,
   mean_vegetated = 20, # grams / cubed-meter # Mel says 3000 is a better estimate.
   sd_vegetated = 2,
-  units='grams/square-meter',
+  mean_infill = 8.125, # grams / cubed-meter # Mel says 3000 is a better estimate.
+  sd_infill = 0.8,
+  units='grams/cubed-meter',
   infill_proportion_remin=0.5 # perecent
   )
 
@@ -154,6 +156,7 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
 ### create project size field
   df <- df %>% left_join(plot_growth, by=c('year', 'treatments'), copy=TRUE)
   # draw parameter values from the corresponding distribution
+  # METHANE
   df$methane <- rnorm(
     n = nrow(df),
     mean = as.numeric(methane['mean_unvegetated']),
@@ -164,6 +167,7 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
     area = df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
     carbon_param = methane
     )
+  # NOX
   df$nitrous_oxide <- rnorm(
     n = nrow(df), #draw from the normal distribution nrow times
     mean = as.numeric(nitrous_oxide['mean_unvegetated']),
@@ -173,6 +177,7 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
     df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
     carbon_param = nitrous_oxide
   )
+  # BIOMASS
   df$biomass <- rnorm(
     n = nrow(df), #draw from the normal distribution nrow times
     mean = as.numeric(biomass['mean_unvegetated']),
@@ -182,20 +187,30 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
     df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
     carbon_param = biomass
   )
-  df$soil <- rnorm(
-    n = nrow(df), #draw from the normal distribution nrow times
-    mean = as.numeric(soil['mean_unvegetated']),
-    sd = as.numeric(soil['sd_unvegetated'])
-  )
-  df[which(df$restoration_status=='Restoration'), 'soil'] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
-    carbon_param = soil
-  )
+  # SOIL
+  df <- simulate.soil(model_df = df, soil_df = soil, depth_infill_m = 0.2, depth_veg_accretion_m = 0.2, depth_unveg_accretion_m = 0.2)
+  # df[which(df$restoration_status=='Restoration'), 'soil'] <- carbon_per_vegetated_area(
+  #   df[which(df$restoration_status=='Restoration'), 'vegetated_area_m2'],
+  #   carbon_param = soil
+  # )
   # set N2O for Restoration where it is dependant on project_size_m2
   # Modify some parameters based on descriptive variables
   # x <- df[which(df$restoration_status == 'Restoration'),]
   return(df)
 }
+
+simulate.soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m){
+  # pull together the three soil constituents:
+    # Veg Natural soil contribution: Area * rho_soil_veg * depth_veg_accretion_m
+    # UnVeg Natural soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m
+    # Infill soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m * percent_remineralized
+  model_df$soil_carbon_veg <- rnorm(n = nrow(df), as.numeric(soil_df$mean_vegetated), sd = as.numeric(soil_df$sd_vegetated)) * model_df$vegetated_area_m2 * depth_veg_accretion_m
+  model_df$soil_carbon_unveg <- rnorm(n = nrow(df), as.numeric(soil_df$mean_unvegetated), sd = as.numeric(soil_df$sd_unvegetated)) * model_df$unvegetated_area_m2 * depth_unveg_accretion_m
+  model_df$soil_carbon_infill <- rnorm(n = nrow(df), as.numeric(soil_df$mean_infill), sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m
+  return(model_df)
+}
+
+
 
 simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   # Transplant scenario
