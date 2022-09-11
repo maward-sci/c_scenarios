@@ -23,14 +23,16 @@ methane <- data.frame(
     mean_vegetated = 0.2,#0.2 Metirc tons CO2eq per ha per yr in veg sites
     sd_vegetated = 0.08,
     units = "co2eq/ha",
-    mean_infill_vegetated = 0.3,
-    sd_infill_vegetated = 0.1
+    mean_infill = 0.3,
+    sd_infill = 0.1
     )
 nitrous_oxide <- data.frame(
   mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
   sd_unvegetated = 0.02,
   mean_vegetated = 0.5,
   sd_vegetated = 0.15,
+  mean_infill = 0.5,
+  sd_infill = 0.15,
   units = "co2eq/ha"
   )
 biomass <- data.frame(
@@ -168,15 +170,7 @@ create_seagrass_exp <- function(n_sim, methane, nitrous_oxide, soil, biomass){
     carbon_param = methane
     )
   # NOX
-  df$nitrous_oxide <- rnorm(
-    n = nrow(df), #draw from the normal distribution nrow times
-    mean = as.numeric(nitrous_oxide["mean_unvegetated"]),
-    sd = as.numeric(nitrous_oxide["sd_unvegetated"])
-    )
-  df[which(df$restoration_status == "Restoration"), "nitrous_oxide"] <- carbon_per_vegetated_area(
-    df[which(df$restoration_status == "Restoration"), "vegetated_area_m2"],
-    carbon_param = nitrous_oxide
-  )
+  df <- simulate_nox(model_df = df, nox_df = nitrous_oxide)
   # BIOMASS
   df <- simulate_biomass(model_df = df, biomass_df = biomass)
   # SOIL
@@ -208,7 +202,8 @@ simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion
   model_df$soil_carbon_infill <- rnorm(
     n = nrow(model_df),
     as.numeric(soil_df$mean_infill),
-    sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m
+    sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m * as.numeric(soil_df$infill_proportion_remin)
+  model_df$soil_carbon_total <- model_df$soil_carbon_veg + model_df$soil_carbon_unveg + model_df$soil_carbon_infill
   return(model_df)
 }
 
@@ -220,6 +215,26 @@ simulate_biomass <- function(model_df, biomass_df){
     sd = as.numeric(biomass_df["sd_vegetated"])
   ) * model_df$vegetated_area_m2
   return(df)
+}
+
+simulate_nox <- function(model_df, nox_df){
+  model_df$nox_carbon_unvegetated <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(nox_df["mean_unvegetated"]),
+    sd = as.numeric(nox_df["sd_unvegetated"])
+    )
+  model_df$nox_carbon_vegetated <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(nox_df["mean_vegetated"]),
+    sd = as.numeric(nox_df["sd_vegetated"])
+    )
+  model_df$nox_carbon_infill <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(nox_df["mean_infill"]),
+    sd = as.numeric(nox_df["sd_infill"])
+    )
+  model_df$nox_carbon_total <- model_df$nox_carbon_unvegetated + model_df$nox_carbon_vegetated + model_df$nox_carbon_infill
+  return(model_df)
 }
 
 simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
