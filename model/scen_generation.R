@@ -209,12 +209,12 @@ simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion
 
 simulate_biomass <- function(model_df, biomass_df){
   # biomass is a function of vegetated area only, because the biomass is the vegetation itself.
-  df$biomass_carbon <- rnorm(
-    n = nrow(model_df), #draw from the normal distribution nrow times
+  model_df$biomass_carbon <- rnorm(
+    n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_vegetated"]),
     sd = as.numeric(biomass_df["sd_vegetated"])
-  ) * model_df$vegetated_area_m2
-  return(df)
+    ) * model_df$vegetated_area_m2
+  return(model_df)
 }
 
 simulate_nox <- function(model_df, nox_df){
