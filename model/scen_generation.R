@@ -134,7 +134,7 @@ create_seagrass_exp <- function(
   soil,
   biomass,
   treatments = c("Seed", "Transplant", "Infill"),
-  restoration_status = c("Baseline", "Restoration"),
+  restoration_status = c("Baseline", "Restoration"), #do we need this anymore?
   n_years = 10
   ){
   #" create_seagrass_exp
@@ -203,7 +203,7 @@ simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion
     n = nrow(model_df),
     as.numeric(soil_df$mean_infill),
     sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m * as.numeric(soil_df$infill_proportion_remin)
-  model_df$soil_carbon_total <- model_df$soil_carbon_veg + model_df$soil_carbon_unveg + model_df$soil_carbon_infill
+  model_df$soil_carbon_total <- model_df$soil_carbon_veg + model_df$soil_carbon_infill - model_df$soil_carbon_unveg ##changed to veg+infill-unveg (aka Rest-BAU, rest vs baseline column now unecessary?)
   return(model_df)
 }
 
@@ -233,7 +233,7 @@ simulate_nox <- function(model_df, nox_df){
     mean = as.numeric(nox_df["mean_infill"]),
     sd = as.numeric(nox_df["sd_infill"])
     ) * model_df$infill_area_m2
-  model_df$nox_carbon_total <- model_df$nox_carbon_unvegetated + model_df$nox_carbon_vegetated + model_df$nox_carbon_infill
+  model_df$nox_carbon_total <- model_df$nox_carbon_vegetated + model_df$nox_carbon_infill - model_df$nox_carbon_unvegetated ###change to subtract unveg
   return(model_df)
 }
 
@@ -253,7 +253,7 @@ simulate_methane <- function(model_df, methane_df){
     mean = as.numeric(methane_df["mean_infill"]),
     sd = as.numeric(methane_df["sd_infill"])
     ) * model_df$infill_area_m2
-  model_df$methane_carbon_total <- model_df$methane_carbon_unvegetated + model_df$methane_carbon_vegetated + model_df$methane_carbon_infill
+  model_df$methane_carbon_total <- model_df$methane_carbon_vegetated + model_df$methane_carbon_infill - model_df$methane_carbon_unvegetated #changed to subtract unveg
   return(model_df)
 }
 
@@ -338,7 +338,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
 summarize_simulations <- function(
   df,
   treatments = c("Seed", "Transplant", "Infill"),
-  restoration_status = c("Baseline", "Restoration")
+  restoration_status = c("Baseline", "Restoration") #need to fix so to add baseline_T = unv, and a rest total == infill + veg columns 
   ){
   #" summarize_simulations
   #" 
