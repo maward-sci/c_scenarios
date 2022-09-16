@@ -10,41 +10,71 @@ df <- create_seagrass_exp(
   soil=soil
   ) #create a df of the simulated data (pulled form distributions)??? 
 
-ggplot(df %>% filter(restoration_status=='Restoration')) +
-  geom_line(aes(x = year, y = methane_carbon_total, color = sim, group = sim)) +
-  facet_grid(~restoration_status)
+df <- compute_totals(df)
+
+mdf <- melt_the_bitch(df)
+
+ggplot(df) +
+  geom_line(aes(x = year, y = methane_carbon_total, color = sim, group = sim))
 
 summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
 
 
-#### plots ##### 
+###### plots #######
 
 ## methane ##
+  #restoration scenario 
 ggplot(summary) +
-  geom_line(aes(x = year, y = methane_carbon_total_mean)) +
-  geom_ribbon(aes(x = year, ymin = methane_carbon_total_mean - methane_carbon_total_sd, ymax = methane_carbon_total_mean + methane_carbon_total_sd), inherit.aes=TRUE) +
-  facet_grid(treatments~restoration_status)
+  geom_line(aes(x = year, y = meth_carbon_rest_mean)) +
+  geom_ribbon(aes(x = year, ymin = meth_carbon_rest_mean - meth_carbon_rest_sd, ymax = meth_carbon_rest_mean + meth_carbon_rest_sd), inherit.aes=TRUE)# +
+  #facet_grid(treatments~restoration_status)
+
+ggplot(summary, aes(year, meth_carbon_rest_mean, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
+
+  #baseline scenario
+ggplot(summary, aes(year, methane_carbon_unvegetated_mean, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
+
 
 ## N2O ##
+  #restoration/project scenarios 
 ggplot(summary) +
-  geom_line(aes(x = year, y = nitrous_oxide_mean)) +
-  geom_ribbon(aes(x = year, ymin = nitrous_oxide_mean - nitrous_oxide_sd, ymax = nitrous_oxide_mean + nitrous_oxide_sd), inherit.aes=TRUE) +
-  facet_grid(treatments~restoration_status)
+  geom_line(aes(x = year, y = nox_carbon_rest_mean)) +
+  geom_ribbon(aes(x = year, ymin = nox_carbon_rest_mean - nox_carbon_rest_sd, ymax = nox_carbon_rest_mean + nox_carbon_rest_sd), inherit.aes=TRUE)# +
+#facet_grid(treatments~restoration_status)
+
+ggplot(summary, aes(year, nox_carbon_rest_mean, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
+
+#baseline scenario
+ggplot(summary, aes(year, nox_carbon_unvegetated_mean, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
+
 
 ## Biomass ##
 ggplot(summary) +
   geom_line(aes(x = year, y = biomass_mean)) +
-  geom_ribbon(aes(x = year, ymin = biomass_mean - biomass_sd, ymax = biomass_mean + biomass_sd), inherit.aes=TRUE) +
-  facet_grid(treatments~restoration_status)
+  geom_ribbon(aes(x = year, ymin = biomass_mean - biomass_sd, ymax = biomass_mean + biomass_sd), inherit.aes=TRUE)
 
 ## Soil ##
 ggplot(summary) +
-  geom_line(aes(x = year, y = soil_mean)) +
-  geom_ribbon(aes(x = year, ymin = soil_mean - soil_sd, ymax = soil_mean + soil_sd), inherit.aes=TRUE) +
-  facet_grid(treatments~restoration_status)
+  geom_line(aes(x = year, y = soil_carbon_rest_mean)) +
+  geom_ribbon(aes(x = year, ymin = soil_carbon_rest_mean - soil_carbon_rest_sd, ymax = soil_carbon_rest_mean + soil_carbon_rest_sd), inherit.aes=TRUE)# +
+#facet_grid(treatments~restoration_status)
+
+ggplot(summary, aes(year, soil_carbon_rest_mean, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
+
+#baseline scenario
+ggplot(summary, aes(year, soil_carbon_unveg_mean, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
 
 ## Net Carbon Gain ##
 ggplot(summary) +
   geom_line(aes(x = year, y = total_mean_carbon)) +
   geom_ribbon(aes(x = year, ymin = total_mean_carbon - total_sd_carbon, ymax = total_mean_carbon + total_sd_carbon), inherit.aes=TRUE) +
   facet_grid(treatments~restoration_status)
+
+ggplot(summary, aes(year, total_mean_carbon, color= treatments)) + 
+  geom_point() + geom_smooth() + theme_bw()
