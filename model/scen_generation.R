@@ -100,32 +100,6 @@ log_growth_general <- function(years, scale = 1, asymptote = 60, year_midpoint =
   return(seagrass_area_m2)
 }
 
-
-### generic version 
-carbon_per_vegetated_area <- function(area, carbon_param){
-  #" carbon_per_vegetated_area
-  #" 
-  #" @description Compute the carbon constituent emissions value as a function of area for vegetated habitats
-  #"
-  #" @param area list. a list of numeric values representing the area in hectares of a plot over time
-  #" @param carbon_param Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param: one of `methane`, `nitrous_oxide`, `biomass`, or `soil`
-  
-  #" @usage carbon_per_vegetated_area(
-  #"  area = 1:10,
-  #"  carbon_param = "methane"
-  #"  )
-  #" @return list of length `length(area)` - The `carbon_param` values as a function of area
-  carbon_rest <- area * as.numeric(
-    rnorm(
-      n = length(area),
-      mean = as.numeric(carbon_param$mean_vegetated),
-      sd = as.numeric(carbon_param$sd_vegetated)
-    )
-  )
-  return(carbon_rest)
-}
-
-
 ### build the scenarios simulations ###
 create_seagrass_exp <- function(
   n_sim,
@@ -181,19 +155,19 @@ simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion
     # UnVeg Natural soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m
     # Infill soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m * percent_remineralized
   # Carbon sequestration amounts are computed as columns in model_df with units of grams / year
-  model_df$soil_carbon_veg <- rnorm(
+  model_df$soil_carbon_vegetated <- rnorm(
     n = nrow(model_df),
     as.numeric(soil_df$mean_vegetated),
     sd = as.numeric(soil_df$sd_vegetated)) * model_df$vegetated_area_m2 * depth_veg_accretion_m
   model_df$soil_carbon_unvegetated <- rnorm(
     n = nrow(model_df),
     as.numeric(soil_df$mean_unvegetated),
-    sd = as.numeric(soil_df$sd_unvegetated)) * model_df$area_sqmeters_unvegetated * depth_unveg_accretion_m
+    sd = as.numeric(soil_df$sd_unvegetated)) * model_df$vegetated_area_m2 * depth_unveg_accretion_m
   model_df$soil_carbon_infill <- rnorm(
     n = nrow(model_df),
     as.numeric(soil_df$mean_infill),
     sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m * as.numeric(soil_df$infill_proportion_remin)
-  #model_df$soil_carbon_total <- model_df$soil_carbon_veg + model_df$soil_carbon_infill - model_df$soil_carbon_unvegetated ##changed to veg+infill-unveg (aka Rest-BAU, rest vs baseline column now unecessary?)
+  #model_df$soil_carbon_total <- model_df$soil_carbon_vegetated + model_df$soil_carbon_infill - model_df$soil_carbon_unvegetated ##changed to veg+infill-unveg (aka Rest-BAU, rest vs baseline column now unecessary?)
   return(model_df)
 }
 
@@ -208,7 +182,7 @@ simulate_biomass <- function(model_df, biomass_df){
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_unvegetated"]),
     sd = as.numeric(biomass_df["sd_unvegetated"])
-  ) * model_df$area_sqmeters_unvegetated
+  ) * model_df$vegetated_area_m2
   return(model_df)
 }
 
@@ -217,7 +191,7 @@ simulate_nox <- function(model_df, nox_df){
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_unvegetated"]),
     sd = as.numeric(nox_df["sd_unvegetated"])
-    ) * model_df$area_sqmeters_unvegetated
+    ) * model_df$vegetated_area_m2
   model_df$nox_carbon_vegetated <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_vegetated"]),
@@ -237,7 +211,7 @@ simulate_methane <- function(model_df, methane_df){
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(methane_df["mean_unvegetated"]),
     sd = as.numeric(methane_df["sd_unvegetated"])
-    ) * model_df$area_sqmeters_unvegetated
+    ) * model_df$vegetated_area_m2
   model_df$methane_carbon_vegetated <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(methane_df["mean_vegetated"]),
@@ -263,13 +237,6 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
       midpoint = NULL,
       year_midpoint = 4.3
       ),
-    area_sqmeters_unvegetated = log_growth_general(
-      years = years,
-      scale = 1,
-      asymptote = plot_growth_asymptote,
-      midpoint = NULL,
-      year_midpoint = 4.3
-      ),
     infill_area_m2 = 0
   ))
   plot_growth_transplant$treatments <- "Transplant"
@@ -277,16 +244,6 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   plot_growth_infill <- as.data.frame(cbind(
     year = years,
     vegetated_area_m2 = c(
-      0,
-      log_growth_general(
-        years = years,
-        scale = 1,
-        asymptote = plot_growth_asymptote,
-        midpoint = NULL,
-        year_midpoint = 4.3
-      )[1:length(years)-1]
-    ),
-    area_sqmeters_unvegetated = c(
       0,
       log_growth_general(
         years = years,
@@ -309,13 +266,6 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
       midpoint = NULL,
       year_midpoint = 5.55
     ),
-    area_sqmeters_unvegetated = log_growth_general(
-      years = years,
-      scale = 1,
-      asymptote = plot_growth_asymptote,
-      midpoint = NULL,
-      year_midpoint = 4.3
-      ),
     infill_area_m2 = 0
   ))
   plot_growth_seed$treatments <- "Seed"
@@ -330,12 +280,13 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
 
 ## summarize rows: rest = infill + vegetated; gain = rest-unvegetated; retain unveg columns 
 compute_totals <- function(df){
-  df_out <- df[,c('treatments', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated', 'area_sqmeters_unvegetated')]
-  df_out$area_sqmeters_rest <- df$vegetated_area_m2 + df$infill_area_m2
+  df_out <- df[,c('treatments', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated')]
   df_out$nox_carbon_rest <- df$nox_carbon_vegetated + df$nox_carbon_infill
   df_out$meth_carbon_rest <- df$methane_carbon_vegetated + df$methane_carbon_infill
-  df_out$soil_carbon_rest <- df$soil_carbon_veg + df$soil_carbon_infill
+  df_out$soil_carbon_rest <- df$soil_carbon_vegetated + df$soil_carbon_infill
   df_out$biomass_carbon_rest <- df$biomass_carbon_vegetated
+  df_out$area_sqmeters_rest <- df$vegetated_area_m2 + df$infill_area_m2
+  df_out$area_sqmeters_unvegetated <- df_out$area_sqmeters_rest #add identical column for the baseline
   
   #now add additionality/gains columns
   df_out$total_nox_gains <- df_out$nox_carbon_rest - df$nox_carbon_unvegetated

@@ -12,10 +12,10 @@ df <- create_seagrass_exp(
 
 df <- compute_totals(df)
 
-mdf <- melt_the_bitch(df)
+mdf <- melt_simulation_df(df)
 
 ggplot(df) +
-  geom_line(aes(x = year, y = methane_carbon_total, color = sim, group = sim))
+  geom_line(aes(x = year, y = total_meth_gains, color = sim, group = sim))
 
 summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
 
