@@ -149,6 +149,7 @@ create_seagrass_exp <- function(
   return(df)
 }
 
+# Helper functions that define growth models for various components
 simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m){
   # pull together the three soil constituents:
     # Veg Natural soil contribution: Area * rho_soil_veg * depth_veg_accretion_m
@@ -278,30 +279,31 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   return(plot_growth)
 }
 
+# After running create_seagress_exp, compute simulation totals
 ## summarize rows: rest = infill + vegetated; gain = rest-unvegetated; retain unveg columns 
 compute_totals <- function(df){
   df_out <- df[,c('treatments', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated')]
-  df_out$nox_carbon_rest <- df$nox_carbon_vegetated + df$nox_carbon_infill
-  df_out$methane_carbon_rest <- df$methane_carbon_vegetated + df$methane_carbon_infill
-  df_out$soil_carbon_rest <- df$soil_carbon_vegetated + df$soil_carbon_infill
-  df_out$biomass_carbon_rest <- df$biomass_carbon_vegetated
-  df_out$area_sqmeters_rest <- df$vegetated_area_m2 + df$infill_area_m2
-  df_out$area_sqmeters_unvegetated <- df_out$area_sqmeters_rest #add identical column for the baseline
+  df_out$nox_carbon_vegetated <- df$nox_carbon_vegetated + df$nox_carbon_infill
+  df_out$methane_carbon_vegetated <- df$methane_carbon_vegetated + df$methane_carbon_infill
+  df_out$soil_carbon_vegetated <- df$soil_carbon_vegetated + df$soil_carbon_infill
+  df_out$biomass_carbon_vegetated <- df$biomass_carbon_vegetated
+  df_out$area_sqmeters_vegetated <- df$vegetated_area_m2 + df$infill_area_m2
+  df_out$area_sqmeters_unvegetated <- df_out$area_sqmeters_vegetated #add identical column for the baseline
   
   #now add additionality/gains columns
-  df_out$total_nox_gains <- df_out$nox_carbon_rest - df$nox_carbon_unvegetated
-  df_out$total_methane_gains <- df_out$methane_carbon_rest - df$methane_carbon_unvegetated
-  df_out$total_soil_gains <- df_out$soil_carbon_rest - df$soil_carbon_unvegetated
-  df_out$total_biomass_gains <- df_out$biomass_carbon_rest
+  df_out$nox_net_gains <- df_out$nox_carbon_vegetated - df$nox_carbon_unvegetated
+  df_out$methane_net_gains <- df_out$methane_carbon_vegetated - df$methane_carbon_unvegetated
+  df_out$soil_net_gains <- df_out$soil_carbon_vegetated - df$soil_carbon_unvegetated
+  df_out$biomass_net_gains <- df_out$biomass_carbon_vegetated
   #total project additionality
-  df_out$total_site_gains <- df_out$total_soil_gains + df_out$total_biomass_gains - df_out$total_methane_gains - df_out$total_nox_gains
+  df_out$overall_net_gains <- df_out$soil_net_gains + df_out$biomass_net_gains - df_out$methane_net_gains - df_out$nox_net_gains
   return(df_out)
 }
 
 ## summarizes the simulation outputs 
 summarize_simulations <- function(
   df,
-  treatments = c("Seed", "Transplant", "Infill")
+  grouping_vars = c('treatments', 'year')
   ){
   #" summarize_simulations
   #" 
@@ -316,7 +318,7 @@ summarize_simulations <- function(
   #" for simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
   #add 'restored' total column (infill + veg)
   summary <- df %>%
-    group_by(treatments, year) %>%
+    group_by_at( grouping_vars ) %>%
     summarize_if(.predicate = is.numeric,
     .funs = c(mean = mean, sd = sd), na.rm=TRUE)
   return(summary)
@@ -325,7 +327,6 @@ summarize_simulations <- function(
 
 ### now melt summary so that we have another column with the "BaselineVsRestoration"
 ## Restructure db with melt##
-
 melt_simulation_df <- function(df, id_vars){
   id_vars <- c('treatments', 'year', 'sim')
   rdf <- reshape2::melt(df, id_vars)

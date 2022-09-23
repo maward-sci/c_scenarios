@@ -12,16 +12,23 @@ df <- create_seagrass_exp(
 
 df <- compute_totals(df)
 
-mdf <- melt_simulation_df(df)
-
 ggplot(df) +
   geom_line(aes(x = year, y = total_methane_gains, color = sim, group = sim))
 
+### Melt and summarize the simulation data
+mdf <- melt_simulation_df(df)
+# Note that you can pass in the appropriate grouping vars as an argument.
+mdf_summary <- summarize_simulations(
+  mdf,
+  grouping_vars = c('treatments', 'year', 'metric', 'restoration_status')
+) %>% select(-c('sim_mean', 'sim_sd'))
+# Plot melted summaries
+ggplot(mdf_summary) +
+  geom_line(aes(x = year, y = value_mean, color = treatments)) +
+  facet_grid(restoration_status~metric)
+
+###### Summarize raw data and plot plots #######
 summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
-
-
-###### plots #######
-
 ## methane ##
   #restoration scenario 
 ggplot(summary) +
