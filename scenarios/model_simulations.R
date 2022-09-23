@@ -46,7 +46,6 @@ ggplot(summary) +
 
 ggplot(summary, aes(year, nox_carbon_rest_mean, color= treatments)) + 
   geom_point() + geom_smooth() + theme_classic()
-
 #baseline scenario
 ggplot(summary, aes(year, nox_carbon_unvegetated_mean, color= treatments)) + 
   geom_point() + geom_smooth() + theme_bw()
@@ -56,7 +55,6 @@ ggplot(summary, aes(year, nox_carbon_unvegetated_mean, color= treatments)) +
 ggplot(summary) +
   geom_line(aes(x = year, y = biomass_carbon_rest_mean)) +
   geom_ribbon(aes(x = year, ymin = biomass_carbon_rest_mean - biomass_carbon_rest_sd, ymax = biomass_carbon_rest_mean + biomass_carbon_rest_sd), inherit.aes=TRUE)
-
 ## Soil ##
 ggplot(summary) +
   geom_line(aes(x = year, y = soil_carbon_rest_mean)) +
@@ -75,6 +73,6 @@ ggplot(summary) +
   geom_line(aes(x = year, y = total_mean_carbon)) +
   geom_ribbon(aes(x = year, ymin = total_mean_carbon - total_sd_carbon, ymax = total_mean_carbon + total_sd_carbon), inherit.aes=TRUE) +
   facet_grid(treatments~restoration_status)
-
+  
 ggplot(summary, aes(year, total_mean_carbon, color= treatments)) + 
   geom_point() + geom_smooth() + theme_bw()
