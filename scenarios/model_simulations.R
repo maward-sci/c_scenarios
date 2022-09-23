@@ -15,7 +15,7 @@ df <- compute_totals(df)
 mdf <- melt_simulation_df(df)
 
 ggplot(df) +
-  geom_line(aes(x = year, y = total_meth_gains, color = sim, group = sim))
+  geom_line(aes(x = year, y = total_methane_gains, color = sim, group = sim))
 
 summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
 
@@ -25,11 +25,11 @@ summary <- summarize_simulations(df) #summarize_simulations in Scen_generation f
 ## methane ##
   #restoration scenario 
 ggplot(summary) +
-  geom_line(aes(x = year, y = meth_carbon_rest_mean)) +
-  geom_ribbon(aes(x = year, ymin = meth_carbon_rest_mean - meth_carbon_rest_sd, ymax = meth_carbon_rest_mean + meth_carbon_rest_sd), inherit.aes=TRUE)# +
+  geom_line(aes(x = year, y = methane_carbon_rest_mean)) +
+  geom_ribbon(aes(x = year, ymin = methane_carbon_rest_mean - methane_carbon_rest_sd, ymax = methane_carbon_rest_mean + methane_carbon_rest_sd), inherit.aes=TRUE)# +
   #facet_grid(treatments~restoration_status)
 
-ggplot(summary, aes(year, meth_carbon_rest_mean, color= treatments)) + 
+ggplot(summary, aes(year, methane_carbon_rest_mean, color= treatments)) + 
   geom_point() + geom_smooth() + theme_bw()
 
   #baseline scenario
@@ -40,12 +40,12 @@ ggplot(summary, aes(year, methane_carbon_unvegetated_mean, color= treatments)) +
 ## N2O ##
   #restoration/project scenarios 
 ggplot(summary) +
-  geom_line(aes(x = year, y = nox_carbon_rest_mean)) +
+  geom_line(aes(x = year, y = nox_carbon_rest_mean)) + 
   geom_ribbon(aes(x = year, ymin = nox_carbon_rest_mean - nox_carbon_rest_sd, ymax = nox_carbon_rest_mean + nox_carbon_rest_sd), inherit.aes=TRUE)# +
 #facet_grid(treatments~restoration_status)
 
 ggplot(summary, aes(year, nox_carbon_rest_mean, color= treatments)) + 
-  geom_point() + geom_smooth() + theme_bw()
+  geom_point() + geom_smooth() + theme_classic()
 
 #baseline scenario
 ggplot(summary, aes(year, nox_carbon_unvegetated_mean, color= treatments)) + 
@@ -54,8 +54,8 @@ ggplot(summary, aes(year, nox_carbon_unvegetated_mean, color= treatments)) +
 
 ## Biomass ##
 ggplot(summary) +
-  geom_line(aes(x = year, y = biomass_mean)) +
-  geom_ribbon(aes(x = year, ymin = biomass_mean - biomass_sd, ymax = biomass_mean + biomass_sd), inherit.aes=TRUE)
+  geom_line(aes(x = year, y = biomass_carbon_rest_mean)) +
+  geom_ribbon(aes(x = year, ymin = biomass_carbon_rest_mean - biomass_carbon_rest_sd, ymax = biomass_carbon_rest_mean + biomass_carbon_rest_sd), inherit.aes=TRUE)
 
 ## Soil ##
 ggplot(summary) +
@@ -67,7 +67,7 @@ ggplot(summary, aes(year, soil_carbon_rest_mean, color= treatments)) +
   geom_point() + geom_smooth() + theme_bw()
 
 #baseline scenario
-ggplot(summary, aes(year, soil_carbon_unveg_mean, color= treatments)) + 
+ggplot(summary, aes(year, soil_carbon_unvegetated_mean, color= treatments)) + 
   geom_point() + geom_smooth() + theme_bw()
 
 ## Net Carbon Gain ##

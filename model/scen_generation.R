@@ -23,16 +23,16 @@ methane <- data.frame(
     mean_vegetated = 0.2,#0.2 Metirc tons CO2eq per ha per yr in veg sites
     sd_vegetated = 0.08,
     units = "co2eq/ha",
-    mean_infill = 0.3,
-    sd_infill = 0.1
+    mean_infill = 0.025, #hmm but if dredged sed, can we assume equal methane emissions (AKA no change b/c what methane is produced in veg site would have been emitted upon dredge anyway?)
+    sd_infill = 0.01 #change infill to = unveg (aka bau), as in, 
     )
 nitrous_oxide <- data.frame(
   mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
   sd_unvegetated = 0.02,
   mean_vegetated = 0.5,
   sd_vegetated = 0.15,
-  mean_infill = 0.5,
-  sd_infill = 0.15,
+  mean_infill = 0.06,
+  sd_infill = 0.02,
   units = "co2eq/ha"
   )
 biomass <- data.frame(
@@ -282,7 +282,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
 compute_totals <- function(df){
   df_out <- df[,c('treatments', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated')]
   df_out$nox_carbon_rest <- df$nox_carbon_vegetated + df$nox_carbon_infill
-  df_out$meth_carbon_rest <- df$methane_carbon_vegetated + df$methane_carbon_infill
+  df_out$methane_carbon_rest <- df$methane_carbon_vegetated + df$methane_carbon_infill
   df_out$soil_carbon_rest <- df$soil_carbon_vegetated + df$soil_carbon_infill
   df_out$biomass_carbon_rest <- df$biomass_carbon_vegetated
   df_out$area_sqmeters_rest <- df$vegetated_area_m2 + df$infill_area_m2
@@ -290,11 +290,11 @@ compute_totals <- function(df){
   
   #now add additionality/gains columns
   df_out$total_nox_gains <- df_out$nox_carbon_rest - df$nox_carbon_unvegetated
-  df_out$total_meth_gains <- df_out$meth_carbon_rest - df$methane_carbon_unvegetated
+  df_out$total_methane_gains <- df_out$methane_carbon_rest - df$methane_carbon_unvegetated
   df_out$total_soil_gains <- df_out$soil_carbon_rest - df$soil_carbon_unvegetated
   df_out$total_biomass_gains <- df_out$biomass_carbon_rest
   #total project additionality
-  df_out$total_site_gains <- df_out$total_soil_gains + df_out$total_biomass_gains - df_out$total_meth_gains - df_out$total_nox_gains
+  df_out$total_site_gains <- df_out$total_soil_gains + df_out$total_biomass_gains - df_out$total_methane_gains - df_out$total_nox_gains
   return(df_out)
 }
 
