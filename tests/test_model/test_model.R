@@ -45,8 +45,8 @@ df <- create_seagrass_exp(
     nitrous_oxide = nitrous_oxide,
     biomass = biomass,
     soil = soil,
-    treatments = c("Seed", "Transplant", "Infill"),
+    treatments = c("Seed", "Transplant", "Infill", "Dredge"),
     n_years = 10
     )
 
-
+totals <- compute_totals(df)

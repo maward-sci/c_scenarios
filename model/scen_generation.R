@@ -129,13 +129,13 @@ create_seagrass_exp <- function(
   #" @return Dataframe with the simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
   years <- seq(from = 0, to = n_years)
   plot_growth <- simulate_plot_growth(years=years)
-### create full-factorial combination of the above descriptive variables
+  ### create full-factorial combination of the above descriptive variables
   df <- expand.grid(
     treatments = treatments,
     year = years,
     sim = 1:n_sim
     )
-### create project size field
+  ### create project size field
   df <- df %>% left_join(plot_growth, by = c("year", "treatments"), copy = TRUE)
   # draw parameter values from the corresponding distribution
   # METHANE
@@ -178,7 +178,7 @@ simulate_biomass <- function(model_df, biomass_df){
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_vegetated"]),
     sd = as.numeric(biomass_df["sd_vegetated"])
-    ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(df)] - model_df$vegetated_area_m2[1:(nrow(df)-1)]))
+    ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(model_df)] - model_df$vegetated_area_m2[1:(nrow(model_df)-1)]))
   model_df$biomass_carbon_unvegetated <- rnorm(
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_unvegetated"]),
@@ -238,6 +238,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
       midpoint = NULL,
       year_midpoint = 4.3
       ),
+    dredge_area_m2 = 0,
     infill_area_m2 = 0
   ))
   plot_growth_transplant$treatments <- "Transplant"
@@ -254,9 +255,18 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
         year_midpoint = 4.3
       )[1:length(years)-1]
     ),
+    dredge_area_m2 = 0,
     infill_area_m2 = c(plot_growth_asymptote, rep(0, times = (length(years)-1)))
   ))
   plot_growth_infill$treatments <- "Infill"
+  # Dredge scenario
+  plot_growth_dredge <- as.data.frame(cbind(
+    year = years,
+    vegetated_area_m2 = plot_growth_asymptote,
+    infill_area_m2 = 0,
+    dredge_area_m2 = c(plot_growth_asymptote, rep(0, times = (length(years)-1)))
+  ))
+  plot_growth_dredge$treatments <- "Dredge"
   # Seed scenario
   plot_growth_seed <- as.data.frame(cbind(
     year = years,
@@ -267,6 +277,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
       midpoint = NULL,
       year_midpoint = 5.55
     ),
+    dredge_area_m2 = 0,
     infill_area_m2 = 0
   ))
   plot_growth_seed$treatments <- "Seed"
@@ -274,7 +285,8 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
   plot_growth <- rbind(
     plot_growth_transplant,
     plot_growth_infill,
-    plot_growth_seed
+    plot_growth_seed,
+    plot_growth_dredge
   )
   return(plot_growth)
 }
@@ -289,7 +301,7 @@ compute_totals <- function(df){
   df_out$biomass_carbon_vegetated <- df$biomass_carbon_vegetated
   df_out$area_sqmeters_vegetated <- df$vegetated_area_m2 + df$infill_area_m2
   df_out$area_sqmeters_unvegetated <- df_out$area_sqmeters_vegetated #add identical column for the baseline
-  
+  df_out$area_sqmeters_unvegetated[which((df_out$treatments == 'Dredge') & (df_out$year == min(df_out$year)))] <- 0
   #now add additionality/gains columns
   df_out$nox_net_gains <- df_out$nox_carbon_vegetated - df$nox_carbon_unvegetated
   df_out$methane_net_gains <- df_out$methane_carbon_vegetated - df$methane_carbon_unvegetated
