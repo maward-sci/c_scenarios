@@ -28,7 +28,7 @@ and:
 
 $C_{\mathrm sed,t}$: Sediment Carbon $(grams / year)$ at year $t$
 
-$C_{\mathrm biomass, t}$:  Carbon content from biomass $(grams / year)$ at year $t$
+$C_{\mathrm biomass, t}$:  Carbon content from incremental gain in biomass $(grams / year)$ at year $t$
 
 $C_{\mathrm methane, t}$:  Methane Carbon gain or loss $(grams / year)$ at year $t$
 
@@ -41,7 +41,7 @@ The indvidual constituents are defined below.
 ---
 ### *Sediment*
 $$
-C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) + (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t})
+C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) - (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t})
 $$
 
 where:
@@ -71,23 +71,28 @@ $p_{\mathrm remin}=$ Proportion of infill Carbon that remineralizes $(%)$ upon a
 ----
 ### *Biomass*
 $$
-C_{\mathrm biomass,t} = (A_{\mathrm veg,t} * \delta_{\mathrm biomass})
+C_{\mathrm biomass,t} = \begin{cases}
+t=0 & A_{\mathrm veg,t=0} * \delta_{\mathrm biomass} \\
+t>0 & (A_{\mathrm veg,t} - A_{\mathrm veg,t-1}) * \delta_{\mathrm biomass}
+ \end{cases}
 $$
 
 where:
 
-$C_{\mathrm biomass,t}$: Carbon content from biomass $(grams / year)$ at year $t$ 
+$C_{\mathrm biomass,t}$: Carbon content from incremental gain in (vegetated) biomass $(grams / year)$ at year $t$
 
 and:
 
 $A_{\mathrm veg,t}=$ Area of vegetated habitat $(m^{2})$ at time $t$
+
+$A_{\mathrm veg,t-1}=$ Area of vegetated habitat $(m^{2})$ at time $t-1$
 
 $\delta_{\mathrm biomass}=$ Density of biomass Carbon $(grams / m^{2})$ at time $t$
 
 ----
 ### *Methane*
 $$
-C_{\mathrm methane,t} = (A_{\mathrm veg,t} * \delta_{\mathrm methane, veg}) + (A_{\mathrm unveg,t} * \delta_{\mathrm methane, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm methane, infill})
+C_{\mathrm methane,t} = (A_{\mathrm veg,t} * \delta_{\mathrm methane, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm methane, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm methane, infill})
 $$
 
 where:
@@ -112,7 +117,7 @@ $\delta_{\mathrm methane, infill}=$ Efflux rate of methane in infill sediment $(
 
 ### *Nitrous Oxide (Nox)*
 $$
-C_{\mathrm nox,t} = (A_{\mathrm veg,t} * \delta_{\mathrm nox, veg}) + (A_{\mathrm unveg,t} * \delta_{\mathrm nox, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm nox, infill})
+C_{\mathrm nox,t} = (A_{\mathrm veg,t} * \delta_{\mathrm nox, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm nox, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm nox, infill})
 $$
 
 where:
