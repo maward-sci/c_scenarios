@@ -41,7 +41,7 @@ The indvidual constituents are defined below.
 ---
 ### *Sediment*
 $$
-C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) - (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t})
+C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) - (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t}) - (A_{\mathrm dredge,t} * \rho_{\mathrm dredge} * d_{\mathrm dredge})
 $$
 
 where:
