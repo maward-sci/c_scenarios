@@ -41,7 +41,7 @@ The indvidual constituents are defined below.
 ---
 ### *Sediment*
 $$
-C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) + (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t})
+C_{\mathrm sed,t} = (A_{\mathrm veg,t} * \rho_{\mathrm veg} * d_{\mathrm acc,t}) - (A_{\mathrm unveg,t} * \rho_{\mathrm unveg} * d_{\mathrm acc,t}) + (A_{\mathrm infill,t} * \rho_{\mathrm infill} * p_{\mathrm remin} * d_{\mathrm infill,t})
 $$
 
 where:
@@ -92,7 +92,7 @@ $\delta_{\mathrm biomass}=$ Density of biomass Carbon $(grams / m^{2})$ at time 
 ----
 ### *Methane*
 $$
-C_{\mathrm methane,t} = (A_{\mathrm veg,t} * \delta_{\mathrm methane, veg}) + (A_{\mathrm unveg,t} * \delta_{\mathrm methane, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm methane, infill})
+C_{\mathrm methane,t} = (A_{\mathrm veg,t} * \delta_{\mathrm methane, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm methane, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm methane, infill})
 $$
 
 where:
@@ -117,7 +117,7 @@ $\delta_{\mathrm methane, infill}=$ Efflux rate of methane in infill sediment $(
 
 ### *Nitrous Oxide (Nox)*
 $$
-C_{\mathrm nox,t} = (A_{\mathrm veg,t} * \delta_{\mathrm nox, veg}) + (A_{\mathrm unveg,t} * \delta_{\mathrm nox, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm nox, infill})
+C_{\mathrm nox,t} = (A_{\mathrm veg,t} * \delta_{\mathrm nox, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm nox, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm nox, infill})
 $$
 
 where:
