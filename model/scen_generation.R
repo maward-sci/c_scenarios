@@ -18,37 +18,37 @@ library(docstring)
 #   ))
 # DataFrame with Model Parameters (roughly estiamted from Oreska et al. Table 3)
 methane <- data.frame(
-    mean_unvegetated = 0.025,#0.025 met T co2eq per ha per yr in unveg sites
-    sd_unvegetated = 0.01,
-    mean_vegetated = 0.2,#0.2 Metirc tons CO2eq per ha per yr in veg sites
-    sd_vegetated = 0.08,
-    units = "co2eq/ha",
-    mean_infill = 0.025, #hmm but if dredged sed, can we assume equal methane emissions (AKA no change b/c what methane is produced in veg site would have been emitted upon dredge anyway?)
-    sd_infill = 0.01 #change infill to = unveg (aka bau), as in, 
+    mean_unvegetated = 2.5,#g methane in CO2 eq per m2 yr
+    sd_unvegetated = 1.75, #SE
+    mean_vegetated = 20,#0.2 Metirc tons CO2eq per ha per yr in veg sites
+    sd_vegetated = 13.25, #SE
+    units = "g_co2eq/m2",
+    mean_infill = 2.5, #hmm but if dredged sed, can we assume equal methane emissions (AKA no change b/c what methane is produced in veg site would have been emitted upon dredge anyway?)
+    sd_infill = 1.75 #change infill to = unveg (aka bau), as in, 
     )
 nitrous_oxide <- data.frame(
-  mean_unvegetated = 0.06,#0.06 metric tons co2eq per ha per yr in unveg sites
-  sd_unvegetated = 0.02,
-  mean_vegetated = 0.5,
-  sd_vegetated = 0.15,
-  mean_infill = 0.06,
-  sd_infill = 0.02,
-  units = "co2eq/ha"
+  mean_unvegetated = 5.96,#0.06 metric tons co2eq per ha per yr in unveg sites
+  sd_unvegetated = 2.98, #se
+  mean_vegetated = 17.88,
+  sd_vegetated = 11.92,
+  mean_infill = 5.96,
+  sd_infill = 2.98,
+  units = "g_co2eq/m2"
   )
 biomass <- data.frame(
   mean_unvegetated = 0,
   sd_unvegetated = 0,
-  mean_vegetated = 0.4,
-  sd_vegetated = 0.02,
+  mean_vegetated = 3,
+  sd_vegetated = 1,
   units = ""
   )
 soil <- data.frame(
-  mean_unvegetated = 8.125, #based very roughly on Oreska table 3 but needs work
-  sd_unvegetated = 0.8,
-  mean_vegetated = 20, # grams / cubed-meter # Mel says 3000 is a better estimate.
+  mean_unvegetated = 10, #based very roughly on Oreska table 3 but needs work
+  sd_unvegetated = 2,#made this up, 
+  mean_vegetated = 35, # grams / cubed-meter # Mel says 3000 is a better estimate.
   sd_vegetated = 2,
-  mean_infill = 8.125, # grams / cubed-meter # Mel says 3000 is a better estimate.
-  sd_infill = 0.8,
+  mean_infill = 10, # grams / cubed-meter # Mel says 3000 is a better estimate.
+  sd_infill = 2,
   units = "grams/cubed-meter",
   infill_proportion_remin = 0.5 # percent
   )
