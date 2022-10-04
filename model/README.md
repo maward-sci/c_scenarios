@@ -28,7 +28,7 @@ and:
 
 $C_{\mathrm sed,t}$: Sediment Carbon $(grams / year)$ at year $t$
 
-$C_{\mathrm biomass, t}$:  Carbon content from biomass $(grams / year)$ at year $t$
+$C_{\mathrm biomass, t}$:  Carbon content from incremental gain in biomass $(grams / year)$ at year $t$
 
 $C_{\mathrm methane, t}$:  Methane Carbon gain or loss $(grams / year)$ at year $t$
 
@@ -71,16 +71,21 @@ $p_{\mathrm remin}=$ Proportion of infill Carbon that remineralizes $(%)$ upon a
 ----
 ### *Biomass*
 $$
-C_{\mathrm biomass,t} = (A_{\mathrm veg,t} * \delta_{\mathrm biomass})
+C_{\mathrm biomass,t} = \begin{cases}
+t=0 & A_{\mathrm veg,t=0} * \delta_{\mathrm biomass} \\
+t>0 & (A_{\mathrm veg,t} - A_{\mathrm veg,t-1}) * \delta_{\mathrm biomass}
+ \end{cases}
 $$
 
 where:
 
-$C_{\mathrm biomass,t}$: Carbon content from biomass $(grams / year)$ at year $t$ 
+$C_{\mathrm biomass,t}$: Carbon content from incremental gain in (vegetated) biomass $(grams / year)$ at year $t$
 
 and:
 
 $A_{\mathrm veg,t}=$ Area of vegetated habitat $(m^{2})$ at time $t$
+
+$A_{\mathrm veg,t-1}=$ Area of vegetated habitat $(m^{2})$ at time $t-1$
 
 $\delta_{\mathrm biomass}=$ Density of biomass Carbon $(grams / m^{2})$ at time $t$
 

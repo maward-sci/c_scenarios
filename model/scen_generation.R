@@ -178,7 +178,7 @@ simulate_biomass <- function(model_df, biomass_df){
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_vegetated"]),
     sd = as.numeric(biomass_df["sd_vegetated"])
-    ) * model_df$vegetated_area_m2
+    ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(df)] - model_df$vegetated_area_m2[1:(nrow(df)-1)]))
   model_df$biomass_carbon_unvegetated <- rnorm(
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_unvegetated"]),
