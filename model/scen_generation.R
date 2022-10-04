@@ -22,9 +22,11 @@ methane <- data.frame(
     sd_unvegetated = 1.75, #SE
     mean_vegetated = 20,#0.2 Metirc tons CO2eq per ha per yr in veg sites
     sd_vegetated = 13.25, #SE
-    units = "g_co2eq/m2",
     mean_infill = 2.5, #hmm but if dredged sed, can we assume equal methane emissions (AKA no change b/c what methane is produced in veg site would have been emitted upon dredge anyway?)
-    sd_infill = 1.75 #change infill to = unveg (aka bau), as in, 
+    sd_infill = 1.75, #change infill to = unveg (aka bau), as in, 
+    mean_dredge = 2.5, #same as UNVEGETATED
+    sd_dredge = 1.75, #same as UNVEGETATED
+    units = "g_co2eq/m2"
     )
 nitrous_oxide <- data.frame(
   mean_unvegetated = 5.96,#0.06 metric tons co2eq per ha per yr in unveg sites
@@ -33,6 +35,8 @@ nitrous_oxide <- data.frame(
   sd_vegetated = 11.92,
   mean_infill = 5.96,
   sd_infill = 2.98,
+  mean_dredge = 5.96, #same as UNVEGETATED
+  sd_dredge = 2.98, #same as UNVEGETATED
   units = "g_co2eq/m2"
   )
 biomass <- data.frame(
@@ -49,11 +53,12 @@ soil <- data.frame(
   sd_vegetated = 2,
   mean_infill = 10, # grams / cubed-meter # Mel says 3000 is a better estimate.
   sd_infill = 2,
+  mean_dredge = 35, #same as VEGETATED
+  sd_dredge = 2, # same as VEGETATED
   units = "grams/cubed-meter",
   infill_proportion_remin = 0.5 # percent
   )
 
-# model_params <- new(
 #   "ModelParams",
 #   methane=methane,
 #   nitrous_oxide=nitrous_oxide,
@@ -145,12 +150,12 @@ create_seagrass_exp <- function(
   # BIOMASS
   df <- simulate_biomass(model_df = df, biomass_df = biomass)
   # SOIL
-  df <- simulate_soil(model_df = df, soil_df = soil, depth_infill_m = 0.2, depth_veg_accretion_m = 0.2, depth_unveg_accretion_m = 0.2)
+  df <- simulate_soil(model_df = df, soil_df = soil, depth_infill_m = 0.2, depth_veg_accretion_m = 0.2, depth_unveg_accretion_m = 0.2, depth_dredge_m=0.5)
   return(df)
 }
 
 # Helper functions that define growth models for various components
-simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m){
+simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m, depth_dredge_m=0.5){
   # pull together the three soil constituents:
     # Veg Natural soil contribution: Area * rho_soil_veg * depth_veg_accretion_m
     # UnVeg Natural soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m
@@ -164,6 +169,10 @@ simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion
     n = nrow(model_df),
     as.numeric(soil_df$mean_unvegetated),
     sd = as.numeric(soil_df$sd_unvegetated)) * model_df$vegetated_area_m2 * depth_unveg_accretion_m
+  model_df$soil_carbon_dredge <- rnorm(
+    n=nrow(model_df), 
+    as.numeric(soil_df$mean_dredge), 
+    sd = as.numeric(soil_df$sd_dredge)) * model_df$dredge_area_m2 * depth_dredge_m
   model_df$soil_carbon_infill <- rnorm(
     n = nrow(model_df),
     as.numeric(soil_df$mean_infill),
@@ -178,7 +187,12 @@ simulate_biomass <- function(model_df, biomass_df){
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_vegetated"]),
     sd = as.numeric(biomass_df["sd_vegetated"])
-    ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(model_df)] - model_df$vegetated_area_m2[1:(nrow(model_df)-1)]))
+  ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(model_df)] - model_df$vegetated_area_m2[1:(nrow(model_df)-1)]))
+  model_df$biomass_carbon_dredged <- rnorm(
+    n = nrow(model_df),
+    mean = as.numeric(biomass_df["mean_dredge"]),
+    sd = as.numeric(biomass_df["sd_dredge"])
+  ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(model_df)] - model_df$vegetated_area_m2[1:(nrow(model_df)-1)]))
   model_df$biomass_carbon_unvegetated <- rnorm(
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_unvegetated"]),
@@ -198,6 +212,11 @@ simulate_nox <- function(model_df, nox_df){
     mean = as.numeric(nox_df["mean_vegetated"]),
     sd = as.numeric(nox_df["sd_vegetated"])
     ) * model_df$vegetated_area_m2
+  model_df$nox_carbon_dredge <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(nox_df["mean_dredge"]),
+    sd = as.numeric(nox_df["sd_dredge"])
+    ) * model_df$dredge_area_m2
   model_df$nox_carbon_infill <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_infill"]),
@@ -218,6 +237,11 @@ simulate_methane <- function(model_df, methane_df){
     mean = as.numeric(methane_df["mean_vegetated"]),
     sd = as.numeric(methane_df["sd_vegetated"])
     ) * model_df$vegetated_area_m2
+  model_df$methane_carbon_dredge <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(methane_df["mean_dredge"]),
+    sd = as.numeric(methane_df["sd_dredge"])
+    ) * model_df$dredge_area_m2
   model_df$methane_carbon_infill <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(methane_df["mean_infill"]),
