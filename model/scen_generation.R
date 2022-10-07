@@ -17,45 +17,45 @@ library(docstring)
 #     soil="data.frame"
 #   ))
 # DataFrame with Model Parameters (roughly estiamted from Oreska et al. Table 3)
-methane <- data.frame(
-    mean_unvegetated = 2.5,#g methane in CO2 eq per m2 yr
-    sd_unvegetated = 1.75, #SE
-    mean_vegetated = 20,#0.2 Metirc tons CO2eq per ha per yr in veg sites
-    sd_vegetated = 13.25, #SE
-    mean_infill = 2.5, #hmm but if dredged sed, can we assume equal methane emissions (AKA no change b/c what methane is produced in veg site would have been emitted upon dredge anyway?)
-    sd_infill = 1.75, #change infill to = unveg (aka bau), as in, 
-    mean_dredge = 2.5, #same as UNVEGETATED
-    sd_dredge = 1.75, #same as UNVEGETATED
-    units = "g_co2eq/m2"
+methane <- data.frame( #LTER data, Oreska 2020
+    mean_unvegetated = 0.6812, 
+    sd_unvegetated = 0.4768, #SE
+    mean_vegetated = 5.5000,
+    sd_vegetated = 3.6103, #SE
+    mean_infill = 0.6812, #same as UNVEGETATED
+    sd_infill = 0.4768, #same as UNVEGETATED, SE
+    mean_dredge = 0.6812, #same as UNVEGETATED
+    sd_dredge = 0.4768, #same as UNVEGETATED, SE
+    units = "g_C/m2"
     )
-nitrous_oxide <- data.frame(
-  mean_unvegetated = 5.96,#0.06 metric tons co2eq per ha per yr in unveg sites
-  sd_unvegetated = 2.98, #se
-  mean_vegetated = 17.88,
-  sd_vegetated = 11.92,
-  mean_infill = 5.96,
-  sd_infill = 2.98,
-  mean_dredge = 5.96, #same as UNVEGETATED
-  sd_dredge = 2.98, #same as UNVEGETATED
-  units = "g_co2eq/m2"
+nitrous_oxide <- data.frame(  #LTER data, Oreska 2020
+  mean_unvegetated = 1.6240, 
+  sd_unvegetated = 0.8200, #se
+  mean_vegetated = 4.8719,
+  sd_vegetated = 3.2480,
+  mean_infill = 1.6240, #same as UNVEGETATED
+  sd_infill = 0.8200, #same as UNVEGETATED, SE
+  mean_dredge = 1.6240, #same as UNVEGETATED
+  sd_dredge = 0.8200, #same as UNVEGETATED, SE
+  units = "g_C/m2"
   )
-biomass <- data.frame(
+biomass <- data.frame( #LTER data, Oreska 2020 via McGlathery et al. 2012
   mean_unvegetated = 0,
   sd_unvegetated = 0,
-  mean_vegetated = 3,
-  sd_vegetated = 1,
-  units = ""
+  mean_vegetated = 181, #total (not per yr) - model runs cumulatively for biomass areas
+  sd_vegetated = 7.74,
+  units = "g_C/m2"
   )
-soil <- data.frame(
-  mean_unvegetated = 10, #based very roughly on Oreska table 3 but needs work
-  sd_unvegetated = 2,#made this up, 
-  mean_vegetated = 35, # grams / cubed-meter # Mel says 3000 is a better estimate.
-  sd_vegetated = 2,
-  mean_infill = 10, # grams / cubed-meter # Mel says 3000 is a better estimate.
-  sd_infill = 2,
-  mean_dredge = 35, #same as VEGETATED
-  sd_dredge = 2, # same as VEGETATED
-  units = "grams/cubed-meter",
+soil <- data.frame( #LTER data, estiamted from Greiner et al. 2013
+  mean_unvegetated = 10, #based very roughly Greiner fig. 3
+  sd_unvegetated = 1.5,#made this up (none reported)
+  mean_vegetated = 36.68, #Greiner fig. 3, g C m2 yr
+  sd_vegetated = 2.79,
+  mean_infill = 10, #same as UNVEGETATED
+  sd_infill = 1.5, #same as UNVEGETATED
+  mean_dredge = 36.68, #same as VEGETATED
+  sd_dredge = 2.79, # same as VEGETATED
+  units = "g_C/m2",
   infill_proportion_remin = 0.5 # percent
   )
 
@@ -112,7 +112,7 @@ create_seagrass_exp <- function(
   nitrous_oxide,
   soil,
   biomass,
-  treatments = c("Seed", "Transplant", "Infill"),
+  treatments = c("Seed", "Transplant", "Infill", "Dredge"),
   n_years = 10
   ){
   #" create_seagrass_exp
@@ -188,7 +188,7 @@ simulate_biomass <- function(model_df, biomass_df){
     mean = as.numeric(biomass_df["mean_vegetated"]),
     sd = as.numeric(biomass_df["sd_vegetated"])
   ) * c(model_df$vegetated_area_m2[1], (model_df$vegetated_area_m2[2:nrow(model_df)] - model_df$vegetated_area_m2[1:(nrow(model_df)-1)]))
-  model_df$biomass_carbon_dredged <- rnorm(
+  model_df$biomass_carbon_dredge <- rnorm(
     n = nrow(model_df),
     mean = as.numeric(biomass_df["mean_dredge"]),
     sd = as.numeric(biomass_df["sd_dredge"])
