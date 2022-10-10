@@ -227,25 +227,24 @@ simulate_methane <- function(model_df, methane_df){
   return(model_df)
 }
 
-simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
+
+simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
   # Transplant scenario
   plot_growth_transplant <- as.data.frame(cbind(
     year = years,
-    vegetated_area_m2 = log_growth_general(
+    transplant_area_m2 = log_growth_general(
       years = years,
       scale = 1,
       asymptote = plot_growth_asymptote,
       midpoint = NULL,
       year_midpoint = 4.3
-      ),
-    infill_area_m2 = 0
+      )
   ))
-  plot_growth_transplant$treatments <- "Transplant"
   # InFill scenario
   plot_growth_infill <- as.data.frame(cbind(
     year = years,
-    vegetated_area_m2 = c(
-      0,
+    infill_area_m2 = c(
+      plot_growth_asymptote,
       log_growth_general(
         years = years,
         scale = 1,
@@ -253,28 +252,30 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 60){
         midpoint = NULL,
         year_midpoint = 4.3
       )[1:length(years)-1]
-    ),
-    infill_area_m2 = c(plot_growth_asymptote, rep(0, times = (length(years)-1)))
+    )
   ))
-  plot_growth_infill$treatments <- "Infill"
   # Seed scenario
   plot_growth_seed <- as.data.frame(cbind(
     year = years,
-    vegetated_area_m2 = log_growth_general(
+    seed_area_m2 = log_growth_general(
       years = years,
       scale = 1,
       asymptote = plot_growth_asymptote,
       midpoint = NULL,
       year_midpoint = 5.55
-    ),
-    infill_area_m2 = 0
+    )
   ))
-  plot_growth_seed$treatments <- "Seed"
+  # Conservation Scenario
+  plot_growth_cons <- as.data.frame(cbind(
+    year = years,
+    cons_area_m2 = plot_growth_asymptote
+  ))
   # Combine Growth Curves
-  plot_growth <- rbind(
+  plot_growth <- cbind(
     plot_growth_transplant,
-    plot_growth_infill,
-    plot_growth_seed
+    plot_growth_infill[,-which(names(plot_growth_transplant) == 'year'), drop=FALSE],
+    plot_growth_seed[,-which(names(plot_growth_transplant) == 'year'), drop = FALSE],
+    plot_growth_cons[,-which(names(plot_growth_transplant) == 'year'), drop = FALSE]
   )
   return(plot_growth)
 }
