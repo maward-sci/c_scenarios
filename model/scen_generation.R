@@ -44,6 +44,8 @@ biomass <- data.frame( #LTER data, Oreska 2020 via McGlathery et al. 2012
   sd_unvegetated = 0,
   mean_vegetated = 181, #total (not per yr) - model runs cumulatively for biomass areas
   sd_vegetated = 7.74,
+  mean_dredge = 0, 
+  sd_dredge = 0, 
   units = "g_C/m2"
   )
 soil <- data.frame( #LTER data, estiamted from Greiner et al. 2013

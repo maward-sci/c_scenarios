@@ -92,7 +92,7 @@ $\delta_{\mathrm biomass}=$ Density of biomass Carbon $(grams / m^{2})$ at time 
 ----
 ### *Methane*
 $$
-C_{\mathrm methane,t} = (A_{\mathrm veg,t} * \delta_{\mathrm methane, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm methane, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm methane, infill})
+C_{\mathrm methane,t} = (A_{\mathrm veg,t} * \delta_{\mathrm methane, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm methane, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm methane, infill}) + (A_{\mathrm dredge,t} * \delta_{\mathrm methane, dredge})
 $$
 
 where:
@@ -117,7 +117,7 @@ $\delta_{\mathrm methane, infill}=$ Efflux rate of methane in infill sediment $(
 
 ### *Nitrous Oxide (Nox)*
 $$
-C_{\mathrm nox,t} = (A_{\mathrm veg,t} * \delta_{\mathrm nox, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm nox, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm nox, infill})
+C_{\mathrm nox,t} = (A_{\mathrm veg,t} * \delta_{\mathrm nox, veg}) - (A_{\mathrm unveg,t} * \delta_{\mathrm nox, unveg}) + (A_{\mathrm infill,t} * \delta_{\mathrm nox, infill}) + (A_{\mathrm dredge,t} * \delta_{\mathrm nox, dredge})
 $$
 
 where:
