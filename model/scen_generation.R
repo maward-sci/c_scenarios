@@ -54,6 +54,12 @@ soil <- data.frame(
   mean_infill = 10, # grams / cubed-meter # Mel says 3000 is a better estimate.
   sd_infill = 2,
   units = "grams/cubed-meter",
+  mean_delta_unvegetated = 0.01, # made up numbers need to get units and correct values
+  sd_delta_unvegetated = 0.01, # made up numbers need to get units and correct values
+  infill_depth = 10, # made up numbers need to get units and correct values
+  mean_delta_vegetated = 0.1, # made up numbers need to get units and correct values
+  sd_delta_vegetated = 0.1, # made up numbers need to get units and correct values
+  drege_depth = 10, # made up numbers need to get units and correct values
   infill_proportion_remin = 0.5 # percent
   )
 
@@ -154,29 +160,90 @@ create_seagrass_exp <- function(
 }
 
 # Helper functions that define growth models for various components
-simulate_soil <- function(model_df, soil_df, depth_infill_m, depth_veg_accretion_m, depth_unveg_accretion_m){
-  # pull together the three soil constituents:
-    # Veg Natural soil contribution: Area * rho_soil_veg * depth_veg_accretion_m
-    # UnVeg Natural soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m
-    # Infill soil contribution: Area * rho_soil_unveg * depth_unveg_accretion_m * percent_remineralized
-  # Carbon sequestration amounts are computed as columns in model_df with units of grams / year
-  model_df$soil_carbon_vegetated <- rnorm(
-    n = nrow(model_df),
-    as.numeric(soil_df$mean_vegetated),
-    sd = as.numeric(soil_df$sd_vegetated)) * model_df$vegetated_area_m2 * depth_veg_accretion_m
-  model_df$soil_carbon_unvegetated <- rnorm(
-    n = nrow(model_df),
-    as.numeric(soil_df$mean_unvegetated),
-    sd = as.numeric(soil_df$sd_unvegetated)) * model_df$vegetated_area_m2 * depth_unveg_accretion_m
-  model_df$soil_carbon_infill <- rnorm(
-    n = nrow(model_df),
-    as.numeric(soil_df$mean_infill),
-    sd = as.numeric(soil_df$sd_infill)) * model_df$infill_area_m2 * depth_infill_m * as.numeric(soil_df$infill_proportion_remin)
-  #model_df$soil_carbon_total <- model_df$soil_carbon_vegetated + model_df$soil_carbon_infill - model_df$soil_carbon_unvegetated ##changed to veg+infill-unveg (aka Rest-BAU, rest vs baseline column now unecessary?)
+simulate_soil <- function(model_df, gas_df){
+  soil_bau_colname <- paste('soil', 'bau', sep = '_')
+  soil_mgmt_colname <- paste('soil', 'mgmt', sep = '_')
+  # Transplant
+  transplant_rows <- which(model_df$scenario %in% c('Transplant'))
+  # BAU
+  model_df[transplant_rows, soil_bau_colname] <- rnorm(
+    n = length(transplant_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * as.numeric(model_df$area_m2[transplant_rows])
+  # MGMT
+  model_df[transplant_rows, soil_mgmt_colname] <- rnorm(
+    n = length(transplant_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * model_df[transplant_rows, 'area_m2']
+  # Infill
+  infill_rows <- which(model_df$scenario %in% c('Infill'))
+  # BAU
+  model_df[infill_rows, soil_bau_colname] <- rnorm(
+    n = length(infill_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * model_df[infill_rows, 'area_m2']
+  # MGMT
+  model_df[infill_rows, soil_mgmt_colname] <- rnorm(
+    n = length(infill_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * model_df[infill_rows, 'area_m2']
+  # overwrite year 0 with unvegetated params
+  infill_year_0 <- which((model_df$scenario == 'Infill') & (model_df$year == min(model_df$year)))
+  model_df[infill_year_0, soil_mgmt_colname] <- rnorm(
+      n = length(infill_year_0),
+      mean = as.numeric(gas_df["mean_unvegetated"]),
+      sd = as.numeric(gas_df["sd_unvegetated"])
+      ) * as.numeric(model_df$area_m2[infill_year_0]) + 
+      rnorm(
+        n = length(infill_year_0),
+        mean = as.numeric(gas_df["mean_delta_unvegetated"]),
+        sd = as.numeric(gas_df["sd_delta_unvegetated"])
+        ) * as.numeric(model_df$area_m2[infill_year_0]) * gas_df$infill_depth
+  # Seed
+  seed_rows <- which(model_df$scenario %in% c('Seed'))
+  # BAU
+  model_df[seed_rows, soil_bau_colname] <- rnorm(
+    n = length(seed_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * as.numeric(model_df$area_m2[seed_rows])
+  # MGMT
+  model_df[seed_rows, soil_mgmt_colname] <- rnorm(
+    n = length(seed_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * model_df[infill_rows, 'area_m2']
+  # Conservation
+  conservation_rows <- which(model_df$scenario %in% c('Conservation'))
+  # BAU
+  model_df[conservation_rows, soil_bau_colname] <- rnorm(
+    n = length(conservation_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * model_df[conservation_rows, 'area_m2']
+  # replace year 0 for BAU
+  conservation_year_0 <- which((model_df$scenario == 'Conservation') & (model_df$year == min(model_df$year)))
+  model_df[conservation_year_0, soil_bau_colname] <- rnorm(
+      n = length(conservation_year_0),
+      mean = as.numeric(gas_df["mean_delta_vegetated"]),
+      sd = as.numeric(gas_df["sd_delta_vegetated"])
+      ) * as.numeric(model_df$area_m2[conservation_year_0]) * gas_df$drege_depth
+  # MGMT
+  model_df[conservation_rows, soil_mgmt_colname] <- rnorm(
+    n = length(conservation_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * model_df[conservation_rows, 'area_m2']
   return(model_df)
 }
 
+
 simulate_biomass <- function(model_df, gas_df){
+  # create delta_area column
   model_df <- model_df %>%
     group_by(scenario, sim) %>%
     mutate(delta_area = area_m2 - lag(area_m2, order_by = year)) %>%
@@ -185,11 +252,13 @@ simulate_biomass <- function(model_df, gas_df){
   biomass_mgmt_colname <- paste('biomass', 'mgmt', sep = '_')
   # Transplant
   transplant_rows <- which(model_df$scenario %in% c('Transplant'))
+  # BAU
   model_df[transplant_rows, biomass_bau_colname] <- rnorm(
     n = length(transplant_rows),
     mean = as.numeric(gas_df["mean_unvegetated"]),
     sd = as.numeric(gas_df["sd_unvegetated"])
     ) * as.numeric(model_df$area_m2[transplant_rows])
+  # MGMT
   model_df[transplant_rows, biomass_mgmt_colname] <- rnorm(
     n = length(transplant_rows),
     mean = as.numeric(gas_df["mean_vegetated"]),
@@ -205,11 +274,13 @@ simulate_biomass <- function(model_df, gas_df){
       ) * as.numeric(model_df$area_m2[transplant_year_0])
   # Infill
   infill_rows <- which(model_df$scenario %in% c('Infill'))
+  # BAY
   model_df[infill_rows, biomass_bau_colname] <- rnorm(
     n = length(infill_rows),
     mean = as.numeric(gas_df["mean_unvegetated"]),
     sd = as.numeric(gas_df["sd_unvegetated"])
     ) * model_df[infill_rows, 'area_m2']
+  # MGMT
   model_df[infill_rows, biomass_mgmt_colname] <- rnorm(
     n = length(infill_rows),
     mean = as.numeric(gas_df["mean_vegetated"]),
@@ -231,11 +302,13 @@ simulate_biomass <- function(model_df, gas_df){
       ) * as.numeric(model_df$area_m2[infill_year_1])
   # Seed
   seed_rows <- which(model_df$scenario %in% c('Seed'))
+  # BAY
   model_df[seed_rows, biomass_bau_colname] <- rnorm(
     n = length(seed_rows),
     mean = as.numeric(gas_df["mean_unvegetated"]),
     sd = as.numeric(gas_df["sd_unvegetated"])
     ) * as.numeric(model_df$area_m2[seed_rows])
+  # MGMT
   model_df[seed_rows, biomass_mgmt_colname] <- rnorm(
     n = length(seed_rows),
     mean = as.numeric(gas_df["mean_vegetated"]),
@@ -250,19 +323,23 @@ simulate_biomass <- function(model_df, gas_df){
       ) * as.numeric(model_df$area_m2[seed_year_0])
   # Conservation
   conservation_rows <- which(model_df$scenario %in% c('Conservation'))
+  # BAU
   model_df[conservation_rows, biomass_bau_colname] <- rnorm(
     n = length(conservation_rows),
     mean = as.numeric(gas_df["mean_unvegetated"]),
     sd = as.numeric(gas_df["sd_unvegetated"])
-    ) * model_df[infill_rows, 'area_m2'] # incremental additional vegetated area at t > 0
+    ) * model_df[conservation_rows, 'area_m2'] # incremental additional vegetated area at t > 0
   # uses vegetated params for year 0 rather than unvegetated
   conservation_year_0 <- which((model_df$scenario == 'Conservation') & (model_df$year == min(model_df$year)))
-  model_df[conservation_year_0, biomass_mgmt_colname] <- rnorm(
+  model_df[conservation_year_0, biomass_bau_colname] <- rnorm(
       n = length(conservation_year_0),
       mean = as.numeric(gas_df["mean_vegetated"]),
       sd = as.numeric(gas_df["sd_vegetated"])
       ) * as.numeric(model_df$area_m2[conservation_year_0])
+  # MGMT
   model_df[conservation_rows, biomass_mgmt_colname] <- 0
+  # drop delta_area
+  model_df <- model_df[,-which(names(model_df) == 'delta_area')]
   return(model_df)
 }
 
