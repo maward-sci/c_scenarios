@@ -153,9 +153,9 @@ create_seagrass_exp <- function(
   # NOX
   df <- simulate_gas(model_df = df, gas_df = nitrous_oxide, gas_type = 'nox')
   # BIOMASS
-  df <- simulate_biomass(model_df = df, biomass_df = biomass)
+  df <- simulate_biomass(model_df = df, gas_df = biomass)
   # SOIL
-  df <- simulate_soil(model_df = df, soil_df = soil, depth_infill_m = 0.2, depth_veg_accretion_m = 0.2, depth_unveg_accretion_m = 0.2)
+  df <- simulate_soil(model_df = df, gas_df = soil)
   return(df)
 }
 
