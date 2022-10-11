@@ -107,19 +107,19 @@ create_seagrass_exp <- function(
   nitrous_oxide,
   soil,
   biomass,
-  treatments = c("Seed", "Transplant", "Infill"),
+  scenarios = c("Seed", "Transplant", "Infill", "Conservation"),
   n_years = 10
   ){
   #" create_seagrass_exp
   #" 
-  #" @description Run a full set of n_sim simulations of predefined restoration treatments (i.e., "scenarios").
+  #" @description Run a full set of n_sim simulations of predefined restoration scenarios (i.e., "scenarioss").
   #"
   #" @param n_sim integer. how many simulations to run
   #" @param methane Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
   #" @param nitrous_oxide Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
   #" @param soil Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
   #" @param biomass Dataframe the table of parameters for vegetated and unvegetated areas for each carbon_param
-  #" @param treatments list of treatments to simulate
+  #" @param scenarios list of scenarios to simulate
   #" @param n_years integer The number of years to simulate
   
   #" @usage create_seagrass_exp(
@@ -131,12 +131,12 @@ create_seagrass_exp <- function(
   plot_growth <- simulate_plot_growth(years=years)
 ### create full-factorial combination of the above descriptive variables
   df <- expand.grid(
-    treatments = treatments,
+    scenarios = scenarios,
     year = years,
     sim = 1:n_sim
     )
 ### create project size field
-  df <- df %>% left_join(plot_growth, by = c("year", "treatments"), copy = TRUE)
+  df <- df %>% left_join(plot_growth, by = c("year", "scenarios"), copy = TRUE)
   # draw parameter values from the corresponding distribution
   # METHANE
   df <- simulate_methane(model_df = df, methane_df = methane)
@@ -188,6 +188,39 @@ simulate_biomass <- function(model_df, biomass_df){
 }
 
 simulate_nox <- function(model_df, nox_df){
+  # Transplant
+  model_df[which(model_df$scenario == 'Transplant'), paste(scenario, 'nox', 'bau', sep = '_')] <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(nox_df["mean_unvegetated"]),
+    sd = as.numeric(nox_df["sd_unvegetated"])
+    ) * model_df$area_m2
+  model_df[which(model_df$scenario == 'Transplant'), paste(scenario, 'nox', 'mgmt', sep = '_')] <- rnorm(
+    n = nrow(model_df), #draw from the normal distribution nrow times
+    mean = as.numeric(nox_df["mean_vegetated"]),
+    sd = as.numeric(nox_df["sd_vegetated"])
+    ) * model_df$area_m2
+  # Infill
+  model_df[which(model_df$scenario == 'Infill'), paste(scenario, 'nox', 'bau', sep = '_')]
+  model_df[which(model_df$scenario == 'Infill'), paste(scenario, 'nox', 'mgmt', sep = '_')]
+  # Seed
+  model_df[which(model_df$scenario == 'Seed'), paste(scenario, 'nox', 'bau', sep = '_')]
+  model_df[which(model_df$scenario == 'Seed'), paste(scenario, 'nox', 'mgmt', sep = '_')]
+  # Conservation
+  model_df[which(model_df$scenario == 'Conservation'), paste(scenario, 'nox', 'bau', sep = '_')]
+  model_df[which(model_df$scenario == 'Conservation'), paste(scenario, 'nox', 'mgmt', sep = '_')]
+  
+  # for (scenario in 1:length(scenarios)){
+  #   ## Compute the NOX carbon for this scenario
+  #   # create a column name for this scenario
+  #   scenario_column_name_bau = paste(scenario, 'nox', 'bau', sep = '_')
+  #   scenario_column_name_mgmt = paste(scenario, 'nox', 'mgmt', sep = '_')
+  #   # get a list of integer indexes which is the rows in `model_df` that match `scenario`
+  #   scenario_index = which(model_df$scenario == scenarios[scenario])
+  #   # custom equations for each scenario
+  #   if (scenario == 'Transplant'){
+  #     model_df[scenario_index, scenario_column_name_bau] = 0
+  #   }
+  # }
   model_df$nox_carbon_unvegetated <- rnorm(
     n = nrow(model_df), #draw from the normal distribution nrow times
     mean = as.numeric(nox_df["mean_unvegetated"]),
@@ -231,19 +264,20 @@ simulate_methane <- function(model_df, methane_df){
 simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
   # Transplant scenario
   plot_growth_transplant <- as.data.frame(cbind(
-    year = years,
-    transplant_area_m2 = log_growth_general(
+    year = as.numeric(years),
+    area_m2 = log_growth_general(
       years = years,
       scale = 1,
       asymptote = plot_growth_asymptote,
       midpoint = NULL,
       year_midpoint = 4.3
-      )
+      ),
+    scenario = 'Transplant'
   ))
   # InFill scenario
   plot_growth_infill <- as.data.frame(cbind(
-    year = years,
-    infill_area_m2 = c(
+    year = as.numeric(years),
+    area_m2 = c(
       plot_growth_asymptote,
       log_growth_general(
         years = years,
@@ -252,38 +286,42 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
         midpoint = NULL,
         year_midpoint = 4.3
       )[1:length(years)-1]
-    )
+    ),
+    scenario = 'Infill'
   ))
   # Seed scenario
   plot_growth_seed <- as.data.frame(cbind(
-    year = years,
-    seed_area_m2 = log_growth_general(
+    year = as.numeric(years),
+    area_m2 = log_growth_general(
       years = years,
       scale = 1,
       asymptote = plot_growth_asymptote,
       midpoint = NULL,
       year_midpoint = 5.55
-    )
+    ),
+    scenario = 'Seed'
   ))
   # Conservation Scenario
   plot_growth_cons <- as.data.frame(cbind(
-    year = years,
-    cons_area_m2 = plot_growth_asymptote
+    year = as.numeric(years),
+    area_m2 = plot_growth_asymptote,
+    scenario = 'Conservation'
   ))
   # Combine Growth Curves
-  plot_growth <- cbind(
+  plot_growth <- rbind(
     plot_growth_transplant,
-    plot_growth_infill[,-which(names(plot_growth_transplant) == 'year'), drop=FALSE],
-    plot_growth_seed[,-which(names(plot_growth_transplant) == 'year'), drop = FALSE],
-    plot_growth_cons[,-which(names(plot_growth_transplant) == 'year'), drop = FALSE]
+    plot_growth_infill,
+    plot_growth_seed,
+    plot_growth_cons
   )
+  plot_growth$year <- as.numeric((plot_growth$year))
   return(plot_growth)
 }
 
 # After running create_seagress_exp, compute simulation totals
 ## summarize rows: rest = infill + vegetated; gain = rest-unvegetated; retain unveg columns 
 compute_totals <- function(df){
-  df_out <- df[,c('treatments', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated')]
+  df_out <- df[,c('scenario', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated')]
   df_out$nox_carbon_vegetated <- df$nox_carbon_vegetated + df$nox_carbon_infill
   df_out$methane_carbon_vegetated <- df$methane_carbon_vegetated + df$methane_carbon_infill
   df_out$soil_carbon_vegetated <- df$soil_carbon_vegetated + df$soil_carbon_infill
@@ -304,7 +342,7 @@ compute_totals <- function(df){
 ## summarizes the simulation outputs 
 summarize_simulations <- function(
   df,
-  grouping_vars = c('treatments', 'year')
+  grouping_vars = c('scenario', 'year')
   ){
   #" summarize_simulations
   #" 
@@ -329,7 +367,7 @@ summarize_simulations <- function(
 ### now melt summary so that we have another column with the "BaselineVsRestoration"
 ## Restructure db with melt##
 melt_simulation_df <- function(df, id_vars){
-  id_vars <- c('treatments', 'year', 'sim')
+  id_vars <- c('scenario', 'year', 'sim')
   rdf <- reshape2::melt(df, id_vars)
   rdf <- rdf %>% tidyr::separate(variable,into=c('metric', 'unit', 'restoration_status'), sep='_')
   return(rdf)
