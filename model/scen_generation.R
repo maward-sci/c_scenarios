@@ -190,7 +190,83 @@ simulate_biomass <- function(model_df, biomass_df){
   ) * model_df$vegetated_area_m2
   return(model_df)
 }
+simulate_biomass_2 <- function(model_df, gas_df){
+  # Transplant
+  transplant_rows <- which(model_df$scenario %in% c('Transplant'))
+  model_df[transplant_rows, paste('biomass', 'bau', sep = '_')] <- rnorm(
+    n = length(transplant_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * as.numeric(model_df$area_m2[transplant_rows])
+  model_df[transplant_rows, paste('biomass', 'mgmt', sep = '_')] <- rnorm(
+    n = length(transplant_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * c(
+       # total vegetated area at t = 0
+      as.numeric(model_df[transplant_rows, 'area_m2'][1]),
+      # incremental additional vegetated area at t > 0
+      (as.numeric(model_df[transplant_rows, 'area_m2'][2:length(transplant_rows)]) - as.numeric(model_df[transplant_rows, 'area_m2'][1:(length(transplant_rows)-1)]))
+    )
+  # Infill
+  infill_rows <- which(model_df$scenario %in% c('Infill'))
+  model_df[infill_rows, paste('biomass', 'bau', sep = '_')] <- rnorm(
+    n = length(infill_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * as.numeric(model_df$area_m2[infill_rows])
+  model_df[infill_rows, paste('biomass', 'mgmt', sep = '_')] <- rnorm(
+    n = length(infill_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * as.numeric(model_df$area_m2[infill_rows])
+  # overwrite year 0 with mean_infill param
+  infill_year_0 <- which((model_df$scenario == 'Infill') & (model_df$year == min(model_df$year)))
+  model_df[infill_year_0, paste('biomass', 'mgmt', sep = '_')] <- rnorm(
+      n = length(infill_year_0),
+      mean = as.numeric(gas_df["mean_infill"]),
+      sd = as.numeric(gas_df["sd_infill"])
+      ) * as.numeric(model_df$area_m2[infill_year_0])
+  # Seed
+  seed_rows <- which(model_df$scenario %in% c('Seed'))
+  model_df[seed_rows, paste('biomass', 'bau', sep = '_')] <- rnorm(
+    n = length(seed_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * as.numeric(model_df$area_m2[seed_rows])
+  model_df[seed_rows, paste('biomass', 'mgmt', sep = '_')] <- rnorm(
+    n = length(seed_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * c(
+       # total vegetated area at t = 0
+      as.numeric(model_df[seed_rows, 'area_m2'][1]),
+      # incremental additional vegetated area at t > 0
+      (as.numeric(model_df[seed_rows, 'area_m2'][2:length(seed_rows)]) - as.numeric(model_df[seed_rows, 'area_m2'][1:(length(seed_rows)-1)]))
+    )
+  # Conservation
+  cons_rows <- which(model_df$scenario %in% c('Conservation'))
+  model_df[cons_rows, paste('biomass', 'bau', sep = '_')] <- rnorm(
+    n = length(cons_rows),
+    mean = as.numeric(gas_df["mean_unvegetated"]),
+    sd = as.numeric(gas_df["sd_unvegetated"])
+    ) * as.numeric(model_df$area_m2[cons_rows])
+  # overwrite year 0 with mean_infill param
+  conservation_year_0 <- which((model_df$scenario == 'Conservation') & (model_df$year == min(model_df$year)))
+  model_df[conservation_year_0, paste('biomass', 'bau', sep = '_')] <- rnorm(
+      n = length(conservation_year_0),
+      mean = as.numeric(gas_df["mean_dredge"]),
+      sd = as.numeric(gas_df["sd_dredge"])
+      ) * as.numeric(model_df$area_m2[conservation_year_0])
+  model_df[cons_rows, paste('biomass', 'mgmt', sep = '_')] <- rnorm(
+    n = length(cons_rows),
+    mean = as.numeric(gas_df["mean_vegetated"]),
+    sd = as.numeric(gas_df["sd_vegetated"])
+    ) * as.numeric(model_df$area_m2[cons_rows])
+  return(model_df)
+}
 
+# NOX & Methane
 simulate_gas <- function(model_df, gas_df, gas_type){
   # Transplant
   transplant_rows <- which(model_df$scenario %in% c('Transplant'))
@@ -256,27 +332,6 @@ simulate_gas <- function(model_df, gas_df, gas_type){
     ) * as.numeric(model_df$area_m2[cons_rows])
   return(model_df)
 }
-
-simulate_methane <- function(model_df, methane_df){
-  model_df$methane_carbon_unvegetated <- rnorm(
-    n = nrow(model_df),
-    mean = as.numeric(methane_df["mean_unvegetated"]),
-    sd = as.numeric(methane_df["sd_unvegetated"])
-    ) * model_df$vegetated_area_m2
-  model_df$methane_carbon_vegetated <- rnorm(
-    n = nrow(model_df),
-    mean = as.numeric(methane_df["mean_vegetated"]),
-    sd = as.numeric(methane_df["sd_vegetated"])
-    ) * model_df$vegetated_area_m2
-  model_df$methane_carbon_infill <- rnorm(
-    n = nrow(model_df),
-    mean = as.numeric(methane_df["mean_infill"]),
-    sd = as.numeric(methane_df["sd_infill"])
-    ) * model_df$infill_area_m2
-  #model_df$methane_carbon_total <- model_df$methane_carbon_vegetated + model_df$methane_carbon_infill - model_df$methane_carbon_unvegetated #changed to subtract unveg
-  return(model_df)
-}
-
 
 simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
   # Transplant scenario
