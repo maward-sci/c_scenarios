@@ -241,7 +241,6 @@ simulate_soil <- function(model_df, gas_df){
   return(model_df)
 }
 
-
 simulate_biomass <- function(model_df, gas_df){
   # create delta_area column
   model_df <- model_df %>%
