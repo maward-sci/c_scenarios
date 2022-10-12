@@ -426,7 +426,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
       ),
     scenario = 'Transplant'
   ))
-# InFill scenario
+# Infill scenario
   plot_growth_infill <- as.data.frame(cbind(
     year = as.numeric(years),
     area_m2 = c(
@@ -471,9 +471,7 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
   return(plot_growth)
 }
 
-# After running create_seagress_exp, compute simulation totals
-## summarize rows: rest = infill + vegetated; gain = rest-unvegetated; retain unveg columns 
-
+##After running create_seagress_exp, compute simulation totals
 compute_totals <- function(df){
   #df_out <- df[,c('scenario', 'year', 'sim', 'area_m2')] #keep a subset of df
   df_out <- df
@@ -489,7 +487,7 @@ compute_totals <- function(df){
 ## summarizes the simulation outputs 
 summarize_simulations <- function(
   df,
-  grouping_vars = c('scenario', 'year')
+  grouping_vars = c('scenario', 'year','treatment')
   ){
   #" summarize_simulations
   #" 
@@ -501,8 +499,7 @@ summarize_simulations <- function(
   #"  df = create_seagrass_exp(model_params,n_sims=5)
   #"  )
   #" @return Dataframe with the mean and standard deviation across simulations
-  #" for simulated area, methane, nitrous_oxide, biomass, and soil values for each restoration method and its baseline
-  #add 'restored' total column (infill + veg)
+  #" for simulated area, methane, nitrous_oxide, biomass, and soil values for each mgmt and bau
   summary <- df %>%
     group_by_at( grouping_vars ) %>%
     summarize_if(.predicate = is.numeric,
