@@ -28,32 +28,32 @@ methane <- data.frame( #LTER data, Oreska 2020
     mean_dredge = 0.6812, #same as UNVEGETATED
     sd_dredge = 0.4768 #same as UNVEGETATED
     )
-nitrous_oxide <- data.frame(
-  mean_unvegetated = 5.96,#0.06 metric tons co2eq per ha per yr in unveg sites
-  sd_unvegetated = 2.98, #se
-  mean_vegetated = 17.88,
-  sd_vegetated = 11.92,
-  mean_infill = 5.96,
-  sd_infill = 2.98,
-  mean_dredge = 5.96, # numbers are made up copied from infill
-  sd_dredge = 2.98, # numbers are made up copied from infill
-  units = "g_co2eq/m2"
+nitrous_oxide <- data.frame( #LTER data, Oreska 2020
+  mean_unvegetated = 1.6240,#0.06 metric tons co2eq per ha per yr in unveg sites
+  sd_unvegetated = 0.8200, #se
+  mean_vegetated = 4.8719,
+  sd_vegetated = 3.2480, 
+  mean_infill = 1.6240, #same as UNVEGETATED
+  sd_infill = 0.8200, #same as UNVEGETATED, SE
+  mean_dredge = 1.6240, #same as UNVEGETATED
+  sd_dredge = 0.8200, #same as UNVEGETATED, SE
+  units = "g_Ceq/m2"
   )
 biomass <- data.frame(
   mean_unvegetated = 0,
   sd_unvegetated = 0,
-  mean_vegetated = 3,
-  sd_vegetated = 1,
+  mean_vegetated = 181, #total (not per yr) - model runs cumulatively for biomass areas  sd_vegetated = 1,
+  sd_vegetated = 7.74,
   units = ""
   )
 soil <- data.frame(
-  mean_unvegetated = 10, #based very roughly on Oreska table 3 but needs work
-  sd_unvegetated = 2,#made this up, 
-  mean_vegetated = 35, # grams / sq m 
-  sd_vegetated = 2,
-  mean_infill = 10, # grams / sq m 
-  sd_infill = 2,
-  units = "grams/cubed-meter",
+  mean_unvegetated = 10, #based very roughly Greiner fig. 3
+  sd_unvegetated = 2,#made this up, none reported
+  mean_vegetated = 36.68, #Greiner fig. 3, g C m2 yr
+  sd_vegetated = 2.79,
+  mean_infill = 10, #same as UNVEGETATED
+  sd_infill = 2, #same as UNVEGETATED
+  units = "g_C/m2",
   mean_delta_unvegetated = 0.01, # delta = C density (g/m3), made up numbers need to get units and correct values
   sd_delta_unvegetated = 0.01, # made up numbers need to get units and correct values
   infill_depth = 10, # made up numbers need to get units and correct values
@@ -79,7 +79,7 @@ soil <- data.frame(
 # https://www.tjmahr.com/anatomy-of-a-logistic-growth-curve/
 # test: plot(logistic_growth(0:10))
 
-log_growth_general <- function(years, scale = 1, asymptote = 60, year_midpoint = NULL, midpoint = NULL ){
+log_growth_general <- function(years, scale = 1, asymptote = 6, year_midpoint = NULL, midpoint = NULL ){
   #" log_growth_general
   #" 
   #" @description Compute logistic growth curve as a function of integer "years"
@@ -314,7 +314,7 @@ simulate_biomass <- function(model_df, gas_df){
     n = length(seed_rows),
     mean = as.numeric(gas_df["mean_vegetated"]),
     sd = as.numeric(gas_df["sd_vegetated"])
-    ) * model_df[infill_rows, 'delta_area'] # incremental additional vegetated area at t > 0
+    ) * model_df[seed_rows, 'delta_area'] # incremental additional vegetated area at t > 0
   # overwrite year 0 with full area (not delta/incremental area)
   seed_year_0 <- which((model_df$scenario == 'Seed') & (model_df$year == min(model_df$year)))
   model_df[seed_year_0, biomass_mgmt_colname] <- rnorm(
@@ -340,7 +340,7 @@ simulate_biomass <- function(model_df, gas_df){
   # MGMT
   model_df[conservation_rows, biomass_mgmt_colname] <- 0
   # drop delta_area
-  model_df <- model_df[,-which(names(model_df) == 'delta_area')]
+  #model_df <- model_df[,-which(names(model_df) == 'delta_area')]
   return(model_df)
 }
 
@@ -466,31 +466,25 @@ simulate_plot_growth <- function(years, plot_growth_asymptote = 6){
     plot_growth_seed,
     plot_growth_cons
   )
-  plot_growth$year <- as.numeric((plot_growth$year))
-  plot_growth$area_m2 <- as.numeric((plot_growth$area_m2))
+  plot_growth$year <- as.numeric(as.character(plot_growth$year))
+  plot_growth$area_m2 <- as.numeric(as.character(plot_growth$area_m2))
   return(plot_growth)
 }
 
 # After running create_seagress_exp, compute simulation totals
 ## summarize rows: rest = infill + vegetated; gain = rest-unvegetated; retain unveg columns 
+
 compute_totals <- function(df){
-  df_out <- df[,c('scenario', 'year', 'sim', 'nox_carbon_unvegetated', 'methane_carbon_unvegetated', 'soil_carbon_unvegetated', 'biomass_carbon_unvegetated')]
-  df_out$nox_carbon_vegetated <- df$nox_carbon_vegetated + df$nox_carbon_infill
-  df_out$methane_carbon_vegetated <- df$methane_carbon_vegetated + df$methane_carbon_infill
-  df_out$soil_carbon_vegetated <- df$soil_carbon_vegetated + df$soil_carbon_infill
-  df_out$biomass_carbon_vegetated <- df$biomass_carbon_vegetated
-  df_out$area_sqmeters_vegetated <- df$vegetated_area_m2 + df$infill_area_m2
-  df_out$area_sqmeters_unvegetated <- df_out$area_sqmeters_vegetated #add identical column for the baseline
-  
-  #now add additionality/gains columns
-  df_out$nox_net_gains <- df_out$nox_carbon_vegetated - df$nox_carbon_unvegetated
-  df_out$methane_net_gains <- df_out$methane_carbon_vegetated - df$methane_carbon_unvegetated
-  df_out$soil_net_gains <- df_out$soil_carbon_vegetated - df$soil_carbon_unvegetated
-  df_out$biomass_net_gains <- df_out$biomass_carbon_vegetated
-  #total project additionality
-  df_out$overall_net_gains <- df_out$soil_net_gains + df_out$biomass_net_gains - df_out$methane_net_gains - df_out$nox_net_gains
+  #df_out <- df[,c('scenario', 'year', 'sim', 'area_m2')] #keep a subset of df
+  df_out <- df
+  df_out$nox_netgain <- df$nox_mgmt - df$nox_bau
+  df_out$methane_netgain <- df$methane_mgmt - df$nox_bau  
+  df_out$soil_netgain <- df$soil_mgmt - df$soil_bau  
+  df_out$biomass_netgain <- df$biomass_mgmt - df$biomass_bau  
+  df_out$overall_netgain <- df_out$soil_netgain + df_out$biomass_netgain - df_out$methane_netgain - df_out$nox_netgain
   return(df_out)
 }
+  
 
 ## summarizes the simulation outputs 
 summarize_simulations <- function(
@@ -517,15 +511,23 @@ summarize_simulations <- function(
 }
 
 
-### now melt summary so that we have another column with the "BaselineVsRestoration"
+### now melt summary so that we have another column with the "BAUvsMGMT
 ## Restructure db with melt##
 melt_simulation_df <- function(df, id_vars){
   id_vars <- c('scenario', 'year', 'sim')
   rdf <- reshape2::melt(df, id_vars)
-  rdf <- rdf %>% tidyr::separate(variable,into=c('metric', 'unit', 'restoration_status'), sep='_')
+  area_df <- rdf %>% 
+    dplyr::filter(variable == 'area_m2') %>%
+    tidyr::separate(variable,into=c('metric', 'unit'), sep='_') %>%
+    mutate(treatment = 'all')
+  metric_df <- rdf %>% 
+    dplyr::filter(variable != 'area_m2') %>%
+    tidyr::separate(variable,into=c('metric', 'treatment'), sep='_') %>%
+    mutate(unit=NA)
+  rdf = rbind(
+    area_df,
+    metric_df
+  )
   return(rdf)
 }
 
-
-
-#(should end up w/ 66 rows)
