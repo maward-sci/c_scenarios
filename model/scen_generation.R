@@ -17,16 +17,16 @@ library(docstring)
 #     soil="data.frame"
 #   ))
 # DataFrame with Model Parameters (roughly estiamted from Oreska et al. Table 3)
-methane <- data.frame(
-    mean_unvegetated = 2.5,#g methane in CO2 eq per m2 yr
-    sd_unvegetated = 1.75, #SE
-    mean_vegetated = 20,#0.2 Metirc tons CO2eq per ha per yr in veg sites
-    sd_vegetated = 13.25, #SE
-    units = "g_co2eq/m2",
-    mean_infill = 2.5, #hmm but if dredged sed, can we assume equal methane emissions (AKA no change b/c what methane is produced in veg site would have been emitted upon dredge anyway?)
-    sd_infill = 1.75, #change infill to = unveg (aka bau), as in, 
-    mean_dredge = 5.96, # numbers are made up copied from infill
-    sd_dredge = 2.98 # numbers are made up copied from infill
+methane <- data.frame( #LTER data, Oreska 2020
+    mean_unvegetated = 0.6812,
+    sd_unvegetated = 0.4768, #SE
+    mean_vegetated = 5.5000,#0.2 Metirc tons CO2eq per ha per yr in veg sites
+    sd_vegetated = 3.6103, #SE
+    units = "g_Ceq/m2",
+    mean_infill = 0.6812, #same as UNVEGETATED
+    sd_infill = 0.4768, #same as UNVEGETATED, SE
+    mean_dredge = 0.6812, #same as UNVEGETATED
+    sd_dredge = 0.4768 #same as UNVEGETATED
     )
 nitrous_oxide <- data.frame(
   mean_unvegetated = 5.96,#0.06 metric tons co2eq per ha per yr in unveg sites
