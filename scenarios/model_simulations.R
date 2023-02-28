@@ -2,6 +2,7 @@ setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
 source('./model/scen_generation.R') #load everything from the scen_generation.R file (akin to running that file)
 library(ggplot2)
 
+##### create df, restructure, and summarize sims ####
 df <- create_seagrass_exp(
   n_sim = 20,
   methane=methane,
@@ -12,27 +13,50 @@ df <- create_seagrass_exp(
 
 df <- compute_totals(df)
 
-#ggplot(df) +
-  geom_line(aes(x = year, y = total_methane_gains, color = sim, group = sim))
+ggplot(df) + geom_line(aes(x = year, y = methane_net_gain, color = sim, group = sim))
 
 ### Melt and summarize the simulation data
 mdf <- melt_simulation_df(df)
+
 # Note that you can pass in the appropriate grouping vars as an argument.
 mdf_summary <- summarize_simulations(
   mdf,
-  grouping_vars = c('treatments', 'year', 'metric', 'restoration_status')
+  grouping_vars = c('scenario', 'year', 'metric', 'treatment')
 ) %>% select(-c('sim_mean', 'sim_sd'))
-# Plot melted summaries
+
+
+## rm some of the factors I dont want ## 
+sum_df <- subset(mdf_summary, mdf_summary$metric != 'delta') 
+sum_df <- subset(sum_df, sum_df$metric != 'area') 
+sum_df <- subset(sum_df, sum_df$metric != 'area') 
+sum_df <- subset(sum_df, sum_df$metric != 'overall') 
+sum_df <- subset(sum_df, sum_df$treatment != 'netgain') 
+
+
+ggplot(sum_df) +
+  geom_line(aes(x = year, y = value_mean, color = scenario)) +
+  facet_grid(treatment~metric)
+
+## seems like there are some issues with the soil BAU for conservation, need to look into this. 
+
+
+
+
+#### confused about what all this crap below is ###
+
+##### plot melted summaries ####
 ggplot(mdf_summary) +
-  geom_line(aes(x = year, y = value_mean, color = treatments)) +
-  facet_grid(restoration_status~metric)
+  geom_line(aes(x = year, y = value_mean, color = scenario)) +
+  facet_grid(treatment~metric)
 
 ggplot(mdf_summary, aes(x= year, y=value_mean, color = treatments)) +
   geom_point() + geom_smooth() + theme_bw() + 
   facet_grid(restoration_status~metric)
 
+
 ###### Summarize raw data and plot plots #######
 summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
+
 ## methane ##
   #restoration scenario 
 ggplot(summary) +
