@@ -1,4 +1,7 @@
-setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
+tryCatch(
+  {setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')},
+  error=function(err){print('Oh, we are not on Mels computer')}
+  )
 source('./model/scen_generation.R') #load everything from the scen_generation.R file (akin to running that file)
 library(ggplot2)
 
