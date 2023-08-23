@@ -1,6 +1,7 @@
 setwd('/Users/melissaward/Documents/Oxford Post-doc/code/c_scenarios')
 source('./model/scen_generation.R') #load everything from the scen_generation.R file (akin to running that file)
 library(ggplot2)
+library(tidyr)
 
 ##### create df, restructure, and summarize sims ####
 df <- create_seagrass_exp(
