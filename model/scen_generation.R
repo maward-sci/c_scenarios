@@ -218,7 +218,7 @@ simulate_soil <- function(model_df, gas_df){
     n = length(seed_rows),
     mean = as.numeric(gas_df["mean_vegetated"]),
     sd = as.numeric(gas_df["sd_vegetated"])
-    ) * model_df[infill_rows, 'area_m2']
+    ) * model_df[seed_rows, 'area_m2']
 # Conservation
   conservation_rows <- which(model_df$scenario %in% c('Conservation'))
   # BAU
