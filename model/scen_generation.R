@@ -113,10 +113,10 @@ log_growth_general <- function(years, scale = 1, asymptote = 6, year_midpoint = 
 ### build the scenarios simulations ###
 create_seagrass_exp <- function(
   n_sim,
-  methane_df,
-  nitrous_oxide_df,
-  soil_df,
-  biomass_df,
+  methane,
+  nitrous_oxide,
+  soil,
+  biomass,
   scenarios = c("Seed", "Transplant", "Infill", "Conservation"),
   n_years = 10
   ){
