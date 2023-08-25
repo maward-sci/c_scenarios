@@ -57,7 +57,7 @@ ggplot(mdf_summary, aes(x= year, y=value_mean, color = treatment)) +
 
 
 ###### Summarize raw data and plot plots #######
-summary <- summarize_simulations(df) #summarize_simulations in Scen_generation file
+summary <- summarize_simulations(df, grouping_vars = c('scenario', 'year')) #summarize_simulations in Scen_generation file, average over all sims
 
 #### METHANE ####
 #restoration scenario 
@@ -116,15 +116,15 @@ ggplot(summary, aes(year, biomass_netgain_mean, color= scenario)) +
 #### SOIL ####
 #restoration scenario 
 ggplot(summary, aes(year, soil_mgmt_mean, color= scenario)) + 
-  geom_point() + geom_smooth() + theme_bw() + ylab('Soil MGMT (Ceq/m2)') 
+  geom_point() + geom_smooth() + theme_bw() + ylab('Soil MGMT (Ceq/m2)') + ggtitle('Soil: Management')
 
 #baseline scenario
 ggplot(summary, aes(year, soil_bau_mean, color= scenario)) + 
-  geom_point() + geom_smooth() + theme_bw() + ylim(-50,300) + ylab('Soil BAU (Ceq/m2)') 
+  geom_point() + geom_smooth() + theme_bw() + ylab('Soil BAU (Ceq/m2)') + ggtitle('Soil: BAU') + ylim(-50,300)
 
 #net gain  
-ggplot(summary, aes(year, biomass_netgain_mean, color= scenario)) + 
-  geom_point() + geom_smooth() + theme_bw() + ylab('Biomass Net Gain (Ceq/m2)')
+ggplot(summary, aes(year, soil_netgain_mean, color= scenario)) + 
+  geom_point() + geom_smooth() + theme_bw() + ylab('Soil Net Gain (Ceq/m2)')
 
 
 

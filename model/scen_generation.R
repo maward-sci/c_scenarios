@@ -54,11 +54,11 @@ soil <- data.frame(
   mean_infill = 10, #same as UNVEGETATED
   sd_infill = 2, #same as UNVEGETATED
   units = "g_C/m2",
-  mean_delta_unvegetated = 0.01, # delta = C density (g/m3), made up numbers need to get units and correct values
-  sd_delta_unvegetated = 0.01, # made up numbers need to get units and correct values
-  infill_depth = 10, # made up numbers need to get units and correct values
-  mean_delta_vegetated = 0.1, # made up numbers need to get units and correct values
-  sd_delta_vegetated = 0.1, # made up numbers need to get units and correct values
+  mean_delta_unvegetated = 9, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
+  sd_delta_unvegetated = 1, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
+  infill_depth = 10, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
+  mean_delta_vegetated = 11, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
+  sd_delta_vegetated = 1, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
   drege_depth = -10, # made up numbers need to get units and correct values
   infill_proportion_remin = 0.5 # percent
   )
@@ -113,10 +113,10 @@ log_growth_general <- function(years, scale = 1, asymptote = 6, year_midpoint = 
 ### build the scenarios simulations ###
 create_seagrass_exp <- function(
   n_sim,
-  methane,
-  nitrous_oxide,
-  soil,
-  biomass,
+  methane_df,
+  nitrous_oxide_df,
+  soil_df,
+  biomass_df,
   scenarios = c("Seed", "Transplant", "Infill", "Conservation"),
   n_years = 10
   ){
@@ -188,12 +188,12 @@ simulate_soil <- function(model_df, gas_df){
     sd = as.numeric(gas_df["sd_unvegetated"])
     ) * model_df[infill_rows, 'area_m2']
   # MGMT
-  model_df[infill_rows, soil_mgmt_colname] <- rnorm(
+  model_df[infill_rows, soil_mgmt_colname] <- rnorm( #for all years except yr = 0
     n = length(infill_rows),
     mean = as.numeric(gas_df["mean_vegetated"]),
     sd = as.numeric(gas_df["sd_vegetated"])
     ) * model_df[infill_rows, 'area_m2']
-  # overwrite year 0 with unvegetated params
+  # overwrite year 0 with unvegetated params (for MGMT)
   infill_year_0 <- which((model_df$scenario == 'Infill') & (model_df$year == min(model_df$year)))
   model_df[infill_year_0, soil_mgmt_colname] <- rnorm(
       n = length(infill_year_0),
@@ -231,14 +231,15 @@ simulate_soil <- function(model_df, gas_df){
   conservation_year_0 <- which((model_df$scenario == 'Conservation') & (model_df$year == min(model_df$year)))
   model_df[conservation_year_0, soil_bau_colname] <- rnorm(
       n = length(conservation_year_0),
-      mean = as.numeric(gas_df["mean_delta_vegetated"]),
-      sd = as.numeric(gas_df["sd_delta_vegetated"])
-      ) * as.numeric(model_df$area_m2[conservation_year_0]) * gas_df$drege_depth +
+      mean = as.numeric(gas_df["mean_unvegetated"]),
+      sd = as.numeric(gas_df["sd_unvegetated"])
+      ) * as.numeric(model_df$area_m2[conservation_year_0]) +  #this yr 0 term represents that depite dredging (at the very beginning of t=0), you will still a small amt of natural unveg site sed accumulation subsequently (should be a minor term in mag comparision)
       rnorm(
         n = length(conservation_year_0),
-        mean = as.numeric(gas_df["mean_delta_unvegetated"]),
-        sd = as.numeric(gas_df["sd_delta_unvegetated"])
-        ) * as.numeric(model_df$area_m2[conservation_year_0]) * gas_df$drege_depth
+        mean = as.numeric(gas_df["mean_delta_vegetated"]),
+        sd = as.numeric(gas_df["sd_delta_vegetated"])
+        ) * as.numeric(model_df$area_m2[conservation_year_0]) * gas_df$drege_depth #above term represents the amount of C lost over the proj area over the dredge depth (dredging sed losses)
+ 
   # MGMT
   model_df[conservation_rows, soil_mgmt_colname] <- rnorm(
     n = length(conservation_rows),
@@ -516,9 +517,9 @@ summarize_simulations <- function(
   #" @return Dataframe with the mean and standard deviation across simulations
   #" for simulated area, methane, nitrous_oxide, biomass, and soil values for each mgmt and bau
   summary <- df %>%
-    group_by_at( grouping_vars ) %>%
-    summarize_if(.predicate = is.numeric,
-    .funs = c(mean = mean, sd = sd), na.rm=TRUE)
+    group_by_at( grouping_vars ) %>% #groups by the above grouping vars 
+    summarize_if(.predicate = is.numeric, #anything that is numeric
+    .funs = c(mean = mean, sd = sd), na.rm=TRUE) # give the mean and SD of those groups 
   return(summary)
 }
 
