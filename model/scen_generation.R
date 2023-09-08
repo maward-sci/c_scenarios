@@ -16,35 +16,35 @@ library(docstring)
 #     biomass="data.frame",
 #     soil="data.frame"
 #   ))
-# DataFrame with Model Parameters (roughly estiamted from Oreska et al. Table 3)
-methane <- data.frame( #LTER data, Oreska 2020
-    mean_unvegetated = 0.6812,
-    sd_unvegetated = 0.4768, #SE
-    mean_vegetated = 5.5000,#0.2 Metirc tons CO2eq per ha per yr in veg sites
-    sd_vegetated = 3.6103, #SE
+# DataFrame with Model Parameters from Virginia LTER data, multiple sources (see 'Aug2023' gsheet for param notes)
+methane <- data.frame( #Oreska 2020, pg 4
+    mean_unvegetated = 0.5727, #mean g Ceq m-2 yr -1
+    sd_unvegetated = 0.5727, #SE
+    mean_vegetated = 4.5814,#0.2 g Ceq per ha per yr in veg sites
+    sd_vegetated = 3.0352, #SE
     units = "g_Ceq/m2",
-    mean_infill = 0.6812, #same as UNVEGETATED
-    sd_infill = 0.4768, #same as UNVEGETATED, SE
-    mean_dredge = 0.6812, #same as UNVEGETATED
-    sd_dredge = 0.4768 #same as UNVEGETATED
+    mean_infill = 0.5727, #same as UNVEGETATED
+    sd_infill = 0.5727, #same as UNVEGETATED, SE
+    mean_dredge = 0.5727, #same as UNVEGETATED
+    sd_dredge = 0.5727 #same as UNVEGETATED
     )
-nitrous_oxide <- data.frame( #LTER data, Oreska 2020
-  mean_unvegetated = 1.6240,#0.06 metric tons co2eq per ha per yr in unveg sites
-  sd_unvegetated = 0.8200, #se
-  mean_vegetated = 4.8719,
-  sd_vegetated = 3.2480, 
-  mean_infill = 1.6240, #same as UNVEGETATED
-  sd_infill = 0.8200, #same as UNVEGETATED, SE
-  mean_dredge = 1.6240, #same as UNVEGETATED
-  sd_dredge = 0.8200, #same as UNVEGETATED, SE
+nitrous_oxide <- data.frame( #Oreska 2020, pg 4
+  mean_unvegetated = 1.6908,#mean g Ceq m-2 yr -1
+  sd_unvegetated = 0.8454, #se
+  mean_vegetated = 5.0723,
+  sd_vegetated = 3.3815, 
+  mean_infill = 1.6908, #same as UNVEGETATED
+  sd_infill = 0.8454, #same as UNVEGETATED, SE
+  mean_dredge = 1.6908, #same as UNVEGETATED
+  sd_dredge = 0.8454, #same as UNVEGETATED, SE
   units = "g_Ceq/m2"
   )
-biomass <- data.frame(
+biomass <- data.frame( #from Oreska 2020 Table 3
   mean_unvegetated = 0,
   sd_unvegetated = 0,
-  mean_vegetated = 181, #total (not per yr) - model runs cumulatively for biomass areas  sd_vegetated = 1,
-  sd_vegetated = 7.74,
-  units = ""
+  mean_vegetated = 49.4056, #total (not per yr) - model runs cumulatively for biomass areas  sd_vegetated = 1,
+  sd_vegetated = 12.2171,
+  units = "" #gCeq/m2
   )
 soil <- data.frame(
   mean_unvegetated = 10, #based very roughly Greiner fig. 3
@@ -54,12 +54,12 @@ soil <- data.frame(
   mean_infill = 10, #same as UNVEGETATED
   sd_infill = 2, #same as UNVEGETATED
   units = "g_C/m2",
-  mean_delta_unvegetated = 9, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
-  sd_delta_unvegetated = 1, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
-  infill_depth = 10, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
-  mean_delta_vegetated = 11, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
-  sd_delta_vegetated = 1, # delta = C density (g/m3), made up numbers to demonstrate, but should be much muhc higher I think
-  drege_depth = -10, # made up numbers need to get units and correct values
+  mean_delta_unvegetated = 138.7, # delta = C density (g C/m3), McGlathery et al. 2012, Fig 7a
+  sd_delta_unvegetated = 20, #SE, McGlathery et al. 2012, Fig 7a (guessed at error bar)
+  infill_depth = 3, #in meters? Double check unit math, but should be m
+  mean_delta_vegetated = 278.9, # delta = C density (g C/m3),  McGlathery et al. 2012, Fig 7a
+  sd_delta_vegetated = 20, #SE, McGlathery et al. 2012, Fig 7a (guessed at error bar)
+  drege_depth = -3, # dredge depth in m (mke equivalent to infill for comparison)
   infill_proportion_remin = 0.5 # percent
   )
 
